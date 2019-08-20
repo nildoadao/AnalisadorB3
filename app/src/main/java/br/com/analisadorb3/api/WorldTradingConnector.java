@@ -1,5 +1,7 @@
 package br.com.analisadorb3.api;
 
+import android.content.Context;
+import android.content.res.Resources;
 import android.widget.ListView;
 
 import org.json.JSONArray;
@@ -15,14 +17,32 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.com.analisadorb3.R;
 import br.com.analisadorb3.models.StockQuote;
 
 public class WorldTradingConnector implements ApiConnector {
+
+    private Context context;
     private final String KEY = "rwNhIENB5s0xpmzAOzBmyBBW944f8uoBUHkT7qEwVsKRXrzFRmLqpFDEo8Eq";
+
+    public WorldTradingConnector(Context context){
+        this.context = context;
+    }
 
     private URL buildLastQuoteUrl(String symbol){
         String urlString = String.format("https://api.worldtradingdata.com/api/v1/stock?symbol=%s&api_token=%s",
                 symbol, KEY);
+        try{
+            return new URL(urlString);
+        }
+        catch (Exception ex){
+            return  null;
+        }
+    }
+
+    private URL buildSearchEndpointUrl(String search){
+        String urlString = String.format("https://api.worldtradingdata.com/api/v1/stock_search?search_term=%s&search_by" +
+                        "symbol,name&limit=10&page=1&api_token=%s", search, KEY);
         try{
             return new URL(urlString);
         }
@@ -90,7 +110,7 @@ public class WorldTradingConnector implements ApiConnector {
             return data;
         }
         catch (IOException e){
-            throw new ApiException("No Internet Connection");
+            throw new ApiException(context.getString(R.string.no_internet));
         }
         catch(Exception e){
             throw new ApiException("Fail to communicate with World Trading, "
@@ -158,7 +178,62 @@ public class WorldTradingConnector implements ApiConnector {
             return stocks;
         }
         catch (IOException e){
-            throw new ApiException("No Internet Connection");
+            throw new ApiException(context.getString(R.string.no_internet));
+        }
+        catch(Exception e){
+            throw new ApiException("Fail to communicate with World Trading, "
+                    + e.getMessage());
+        }
+        finally {
+            connection.disconnect();
+        }
+    }
+
+    @Override
+    public List<StockQuote> searchEndpoint(String searchTerm) throws ApiException {
+        URL url = buildSearchEndpointUrl(searchTerm);
+
+        if(url == null)
+            throw new ApiException("Bad Url");
+
+        HttpURLConnection connection = buildUrlConnection(url);
+
+        if(connection == null)
+            throw new ApiException("Bad Url");
+
+        try {
+
+            int responseCode = connection.getResponseCode();
+
+            if(responseCode != HttpURLConnection.HTTP_OK)
+                throw new ApiException("Fail to get Stock data, code "
+                        + responseCode);
+
+            String inputLine;
+            BufferedReader input = new BufferedReader(
+                    new InputStreamReader(connection.getInputStream()));
+
+            StringBuffer response = new StringBuffer();
+            while ((inputLine = input.readLine()) != null){
+                response.append(inputLine);
+            }
+            JSONObject json = new JSONObject(response.toString());
+            JSONArray jsonData = json.getJSONArray("data");
+            List<StockQuote> stocks = new ArrayList<StockQuote>();
+
+            for(int i = 0; i < jsonData.length(); i++){
+                StockQuote data = new StockQuote();
+                data.setCompany(jsonData.getJSONObject(i).getString("name"));
+                data.setSymbol(jsonData.getJSONObject(i).getString("symbol"));
+                data.setCurrency(jsonData.getJSONObject(i).getString("currency"));
+                data.setPrice(Double.parseDouble(jsonData.getJSONObject(i).getString("price")));
+                stocks.add(data);
+            }
+
+            return stocks;
+        }
+        catch (IOException e){
+            throw new ApiException(context.getString(R.string.no_internet));
         }
         catch(Exception e){
             throw new ApiException("Fail to communicate with World Trading, "

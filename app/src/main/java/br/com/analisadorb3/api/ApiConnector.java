@@ -10,4 +10,5 @@ public interface ApiConnector {
     List<StockQuote> getDailyTimeSeries(String symbol) throws ApiException;
     List<StockQuote> getMonthTimeSeries(String symbol) throws ApiException;
     List<StockQuote> getLastQuote(List<String> symbols) throws ApiException;
+    List<StockQuote> searchEndpoint(String searchTerm) throws ApiException;
 }

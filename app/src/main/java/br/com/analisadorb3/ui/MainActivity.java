@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,8 +19,8 @@ import br.com.analisadorb3.api.ApiConnector;
 import br.com.analisadorb3.api.WorldTradingConnector;
 import br.com.analisadorb3.models.StockListFragment;
 import br.com.analisadorb3.models.StockQuote;
-import br.com.analisadorb3.ui.Adaptors.ErrorAdapter;
-import br.com.analisadorb3.ui.Adaptors.StockAdapter;
+import br.com.analisadorb3.Adaptors.ErrorAdapter;
+import br.com.analisadorb3.Adaptors.StockAdapter;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -79,6 +81,14 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        ImageButton search = findViewById(R.id.search_button);
+        search.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getBaseContext(), SearchActivity.class);
+                startActivity(intent);
+            }
+        });
 
         list.setAdapter(adapter);
         refresh = findViewById(R.id.pullToRefresh);
@@ -125,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
         protected List<StockQuote> doInBackground(List<String>... params) {
             List<StockQuote> list = new ArrayList<>();
             try {
-                ApiConnector api = new WorldTradingConnector();
+                ApiConnector api = new WorldTradingConnector(getBaseContext());
                 list = api.getLastQuote(params[0]);
             } catch (Exception e) {
                 return null;

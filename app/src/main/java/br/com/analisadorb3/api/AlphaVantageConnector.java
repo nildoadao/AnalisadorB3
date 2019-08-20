@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.util.JsonReader;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
@@ -26,7 +27,12 @@ import br.com.analisadorb3.models.StockQuote;
 
 public class AlphaVantageConnector implements ApiConnector {
 
+    private Context context;
     private final String KEY= "XC5MVLREL74KNLOR";
+
+    public AlphaVantageConnector(Context context){
+        this.context = context;
+    }
 
     private URL buildLastQuoteUrl(String symbol){
         String urlString = String.format("https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=%s&apikey=%s",
@@ -89,13 +95,6 @@ public class AlphaVantageConnector implements ApiConnector {
             }
 
             JSONObject json = new JSONObject(response.toString());
-            try {
-                String errorMessage = json.getString("Note");
-                if(errorMessage != null){
-                    throw new ApiException(Resources.getSystem().getString(R.string.alpha_vantage_request_per_minute_exceeded));
-                }
-            }
-            catch (Exception ex){}
             StockQuote data = new StockQuote();
             JSONObject globalQuote = json.getJSONObject("Global Quote");
             String quoteDate = globalQuote.getString("07. latest trading day");
@@ -114,7 +113,10 @@ public class AlphaVantageConnector implements ApiConnector {
             return data;
         }
         catch (IOException e){
-            throw new ApiException("No Internet Connection");
+            throw new ApiException(context.getString(R.string.no_internet));
+        }
+        catch (JSONException e){
+            throw new ApiException(context.getString(R.string.alpha_vantage_request_per_minute_exceeded));
         }
         catch(Exception e){
             throw new ApiException("Fail to communicate with AlphaVantage, "
@@ -159,13 +161,6 @@ public class AlphaVantageConnector implements ApiConnector {
                 response.append(inputLine);
             }
             JSONObject json = new JSONObject(response.toString());
-            try {
-                String errorMessage = json.getString("Note");
-                if(errorMessage != null){
-                    throw new ApiException(Resources.getSystem().getString(R.string.alpha_vantage_request_per_minute_exceeded));
-                }
-            }
-            catch (Exception ex){}
             JSONObject stockData = json.getJSONObject("Time Series (Daily)");
             Iterator<String> iterator = stockData.keys();
             List<StockQuote> stockList = new ArrayList<>();
@@ -185,7 +180,10 @@ public class AlphaVantageConnector implements ApiConnector {
             return stockList;
         }
         catch (IOException e){
-            throw new ApiException("No Internet Connection");
+            throw new ApiException(context.getString(R.string.no_internet));
+        }
+        catch (JSONException e){
+            throw new ApiException(context.getString(R.string.alpha_vantage_request_per_minute_exceeded));
         }
         catch(Exception e){
             throw new ApiException("Fail to communicate with AlphaVantage, "
@@ -203,6 +201,11 @@ public class AlphaVantageConnector implements ApiConnector {
 
     @Override
     public List<StockQuote> getLastQuote(List<String> symbols) throws ApiException {
+        return null;
+    }
+
+    @Override
+    public List<StockQuote> searchEndpoint(String searchTerm) throws ApiException {
         return null;
     }
 }

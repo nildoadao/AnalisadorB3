@@ -8,7 +8,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.GridView;
+import android.widget.ListView;
 import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +18,8 @@ import br.com.analisadorb3.api.ApiConnector;
 import br.com.analisadorb3.models.StockFragment;
 import br.com.analisadorb3.models.StockListFragment;
 import br.com.analisadorb3.models.StockQuote;
-import br.com.analisadorb3.ui.Adaptors.ErrorAdapter;
-import br.com.analisadorb3.ui.Adaptors.StockInfoAdapter;
+import br.com.analisadorb3.Adaptors.ErrorAdapter;
+import br.com.analisadorb3.Adaptors.StockInfoAdapter;
 
 public class StockInfoActivity extends AppCompatActivity {
 
@@ -61,8 +61,8 @@ public class StockInfoActivity extends AppCompatActivity {
 
         stockInfoAdapter = new StockInfoAdapter(this, stock, historyQuote.getData());
 
-        GridView stockGrid = findViewById(R.id.stock_info_grid);
-        stockGrid.setAdapter(stockInfoAdapter);
+        ListView stockList = findViewById(R.id.stock_info_list);
+        stockList.setAdapter(stockInfoAdapter);
 
         Button backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(new View.OnClickListener() {
@@ -123,15 +123,15 @@ public class StockInfoActivity extends AppCompatActivity {
             for(StockQuote quote : list)
                 historyQuote.getData().add(quote);
 
-            GridView stockGrid = findViewById(R.id.stock_info_grid);
-            stockGrid.setAdapter(stockInfoAdapter);
+            ListView stockList = findViewById(R.id.stock_info_list);
+            stockList.setAdapter(stockInfoAdapter);
             stockInfoAdapter.notifyDataSetChanged();
             refresh.setRefreshing(false);
         }
         else {
             errorAdapter = new ErrorAdapter(this, errorMessage);
-            GridView stock_grid = findViewById(R.id.stock_info_grid);
-            stock_grid.setAdapter(errorAdapter);
+            ListView stockList = findViewById(R.id.stock_info_list);
+            stockList.setAdapter(errorAdapter);
             refresh.setRefreshing(false);
         }
     }
@@ -141,7 +141,7 @@ public class StockInfoActivity extends AppCompatActivity {
         protected List<StockQuote> doInBackground(String... params) {
             List<StockQuote> list;
             try{
-                ApiConnector api = new AlphaVantageConnector();
+                ApiConnector api = new AlphaVantageConnector(getBaseContext());
                 list = api.getDailyTimeSeries(params[0]);
             }
             catch (Exception ex){

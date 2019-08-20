@@ -1,7 +1,6 @@
-package br.com.analisadorb3.ui.Adaptors;
+package br.com.analisadorb3.Adaptors;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +12,7 @@ import java.util.List;
 import br.com.analisadorb3.R;
 import br.com.analisadorb3.models.StockQuote;
 
-public class StockAdapter extends BaseAdapter {
+public class SearchItemAdapter extends BaseAdapter {
     Context context;
     List<StockQuote> stocks;
     private static LayoutInflater inflater = null;
@@ -23,16 +22,21 @@ public class StockAdapter extends BaseAdapter {
         void onItemClick(Context context, int position);
     }
 
-    public void setOnItemClickListener(OnItemClickListener listener){
-        this.listener = listener;
-    }
-
-    public StockAdapter(Context context, List<StockQuote> stocks){
+    public SearchItemAdapter(Context context, List<StockQuote> stocks){
         this.context = context;
         this.stocks = stocks;
         inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
+
+    public List<StockQuote> getData(){
+        return this.stocks;
+    }
+
+    public void setData(List<StockQuote> stocks){
+        this.stocks = stocks;
+    }
+
     @Override
     public int getCount() {
         return stocks.size();
@@ -50,34 +54,22 @@ public class StockAdapter extends BaseAdapter {
 
     @Override
     public View getView(final int i, View view, ViewGroup viewGroup) {
-
         if (view == null)
-            view = inflater.inflate(R.layout.stock_item, null);
+            view = inflater.inflate(R.layout.search_item_result, null);
 
-        TextView stockName = view.findViewById(R.id.stock_name);
-        TextView stockPrice = view.findViewById(R.id.stock_info_price);
-        TextView stockChange = view.findViewById(R.id.stock_change_percent);
-
-        stockName.setText(stocks.get(i).getSymbol());
-        stockPrice.setText(String.format("%.2f %s", stocks.get(i).getPrice(),
-                stocks.get(i).getCurrency()));
-        stockChange.setText(String.format("%.2f (%s)",
-                stocks.get(i).getChange(), stocks.get(i).getChangePercent()));
+        TextView symbol = view.findViewById(R.id.search_item_symbol);
+        TextView company = view.findViewById(R.id.search_item_company);
+        symbol.setText(stocks.get(i).getSymbol());
+        company.setText(stocks.get(i).getCompany());
 
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(listener != null){
+                if(listener != null)
                     listener.onItemClick(view.getContext(), i);
-                }
             }
         });
-        if(stocks.get(i).getChange() >= 0) {
-            stockChange.setTextColor(Color.argb(255, 0, 127, 0));
-        }
-        else{
-            stockChange.setTextColor(Color.RED);
-        }
+
         return view;
     }
 }
