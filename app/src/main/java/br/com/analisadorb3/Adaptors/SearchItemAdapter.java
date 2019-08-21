@@ -1,4 +1,4 @@
-package br.com.analisadorb3.Adaptors;
+package br.com.analisadorb3.adaptors;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -6,9 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
-
 import java.util.List;
-
 import br.com.analisadorb3.R;
 import br.com.analisadorb3.models.StockQuote;
 
@@ -20,6 +18,10 @@ public class SearchItemAdapter extends BaseAdapter {
 
     public interface OnItemClickListener{
         void onItemClick(Context context, int position);
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener){
+        this.listener = listener;
     }
 
     public SearchItemAdapter(Context context, List<StockQuote> stocks){

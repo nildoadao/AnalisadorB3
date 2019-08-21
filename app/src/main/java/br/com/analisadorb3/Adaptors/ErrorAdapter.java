@@ -1,4 +1,4 @@
-package br.com.analisadorb3.Adaptors;
+package br.com.analisadorb3.adaptors;
 
 import android.content.Context;
 import android.view.LayoutInflater;

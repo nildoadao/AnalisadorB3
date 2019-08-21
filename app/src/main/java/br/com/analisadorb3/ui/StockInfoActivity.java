@@ -15,21 +15,24 @@ import java.util.List;
 import br.com.analisadorb3.R;
 import br.com.analisadorb3.api.AlphaVantageConnector;
 import br.com.analisadorb3.api.ApiConnector;
+import br.com.analisadorb3.api.ApiException;
+import br.com.analisadorb3.api.WorldTradingConnector;
 import br.com.analisadorb3.models.StockFragment;
 import br.com.analisadorb3.models.StockListFragment;
 import br.com.analisadorb3.models.StockQuote;
-import br.com.analisadorb3.Adaptors.ErrorAdapter;
-import br.com.analisadorb3.Adaptors.StockInfoAdapter;
+import br.com.analisadorb3.adaptors.ErrorAdapter;
+import br.com.analisadorb3.adaptors.StockInfoAdapter;
 
 public class StockInfoActivity extends AppCompatActivity {
 
     private StockFragment lastQuote;
     private StockListFragment historyQuote;
     private String errorMessage;
-    private StockQuote stock;
     private StockInfoAdapter stockInfoAdapter;
     private ErrorAdapter errorAdapter;
     private SwipeRefreshLayout refresh;
+    private String symbol;
+    private String company;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,30 +40,25 @@ public class StockInfoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_stock_info);
         getExtras();
         refresh = findViewById(R.id.stock_info_swipe_refresh);
-
         FragmentManager manager = getSupportFragmentManager();
         lastQuote = (StockFragment) manager.findFragmentByTag("lastQuote");
         historyQuote = (StockListFragment) manager.findFragmentByTag("historyQuote");
 
         if(lastQuote == null){
             lastQuote = new StockFragment();
-            lastQuote.setData(stock);
-            manager.beginTransaction().add(lastQuote, "lastQuote").commit();
-        }
-
-        if(historyQuote == null){
             historyQuote = new StockListFragment();
+            lastQuote.setData(new StockQuote());
             historyQuote.setData(new ArrayList<StockQuote>());
+            manager.beginTransaction().add(lastQuote, "lastQuote").commit();
             manager.beginTransaction().add(historyQuote, "historyQuote").commit();
             refresh.setRefreshing(true);
-            new LoadStockHistory().execute(stock.getSymbol());
+            new LoadStockQuote().execute(symbol);
+            new LoadStockHistory().execute(symbol);
         }
 
         TextView companyName = findViewById(R.id.stock_info_company);
-        companyName.setText(stock.getCompany());
-
-        stockInfoAdapter = new StockInfoAdapter(this, stock, historyQuote.getData());
-
+        companyName.setText(company);
+        stockInfoAdapter = new StockInfoAdapter(this, lastQuote.getData(), historyQuote.getData());
         ListView stockList = findViewById(R.id.stock_info_list);
         stockList.setAdapter(stockInfoAdapter);
 
@@ -71,44 +69,26 @@ public class StockInfoActivity extends AppCompatActivity {
                 onBackPressed();
             }
         });
-
-
         refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 if(!refresh.isRefreshing())
                     refresh.setRefreshing(true);
 
-                new LoadStockHistory().execute(stock.getSymbol());
+                new LoadStockHistory().execute(symbol);
             }
         });
     }
 
     private void getExtras(){
         Intent intent = getIntent();
-        String symbol = intent.getStringExtra(MainActivity.SYMBOL_MESSAGE);
-        String company = intent.getStringExtra(MainActivity.COMPANY_MESSAGE);
-        double price = intent.getDoubleExtra(MainActivity.PRICE_MESSAGE, 0);
-        String currency = intent.getStringExtra(MainActivity.CURRENCY_MESSAGE);
-        double change = intent.getDoubleExtra(MainActivity.CHANGE_MESSAGE, 0);
-        String changePercent = intent.getStringExtra(MainActivity.CHANGE_PERCENT_MESSAGE);
-        double open = intent.getDoubleExtra(MainActivity.OPEN_MESSAGE, 0);
-        double previousClose = intent.getDoubleExtra(MainActivity.PREVIOUS_CLOSE_MESSAGE, 0);
-        double volume = intent.getDoubleExtra(MainActivity.VOLUME_MESSAGE, 0);
-        double dayHigh = intent.getDoubleExtra(MainActivity.DAY_HIGH_MESSAGE, 0);
-        double dayLow = intent.getDoubleExtra(MainActivity.DAY_LOW_MESSAGE, 0);
-        stock = new StockQuote();
-        stock.setSymbol(symbol);
-        stock.setCompany(company);
-        stock.setPrice(price);
-        stock.setCurrency(currency);
-        stock.setChange(change);
-        stock.setChangePercent(changePercent);
-        stock.setOpen(open);
-        stock.setPreviousClose(previousClose);
-        stock.setVolume(volume);
-        stock.setHigh(dayHigh);
-        stock.setLow(dayLow);
+        symbol = intent.getStringExtra(MainActivity.SYMBOL_MESSAGE);
+        company = intent.getStringExtra(MainActivity.COMPANY_MESSAGE);
+
+        if(symbol == null){ // Coming from search
+            symbol = intent.getStringExtra(SearchActivity.SYMBOL_MESSAGE);
+            company = intent.getStringExtra(SearchActivity.COMPANY_MESSAGE);
+        }
     }
 
     public void onDestroy(){
@@ -123,10 +103,25 @@ public class StockInfoActivity extends AppCompatActivity {
             for(StockQuote quote : list)
                 historyQuote.getData().add(quote);
 
+            stockInfoAdapter = new StockInfoAdapter(this, lastQuote.getData(), historyQuote.getData());
             ListView stockList = findViewById(R.id.stock_info_list);
             stockList.setAdapter(stockInfoAdapter);
-            stockInfoAdapter.notifyDataSetChanged();
             refresh.setRefreshing(false);
+        }
+        else {
+            errorAdapter = new ErrorAdapter(this, errorMessage);
+            ListView stockList = findViewById(R.id.stock_info_list);
+            stockList.setAdapter(errorAdapter);
+            refresh.setRefreshing(false);
+        }
+    }
+
+    private void onLoadStockQuoteCompleted(StockQuote result){
+        if(result != null){
+            lastQuote.setData(result);
+            stockInfoAdapter = new StockInfoAdapter(this, lastQuote.getData(), historyQuote.getData());
+            ListView stockList = findViewById(R.id.stock_info_list);
+            stockList.setAdapter(stockInfoAdapter);
         }
         else {
             errorAdapter = new ErrorAdapter(this, errorMessage);
@@ -155,6 +150,27 @@ public class StockInfoActivity extends AppCompatActivity {
         protected void onPostExecute(List<StockQuote> result) {
             super.onPostExecute(result);
             onLoadStockHistoryCompleted(result);
+        }
+    }
+
+    public class LoadStockQuote extends AsyncTask<String, Void, StockQuote>{
+
+        @Override
+        protected StockQuote doInBackground(String... params) {
+            try{
+                ApiConnector api = new WorldTradingConnector(getBaseContext());
+                return api.getLastQuote(params[0]);
+            }
+            catch (ApiException e){
+                errorMessage = e.getMessage();
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(StockQuote stockQuote) {
+            super.onPostExecute(stockQuote);
+            onLoadStockQuoteCompleted(stockQuote);
         }
     }
 }

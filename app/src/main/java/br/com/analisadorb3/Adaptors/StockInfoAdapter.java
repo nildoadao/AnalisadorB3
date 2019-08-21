@@ -1,4 +1,4 @@
-package br.com.analisadorb3.Adaptors;
+package br.com.analisadorb3.adaptors;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -58,7 +58,7 @@ public class StockInfoAdapter extends BaseAdapter {
 
         stockSymbol.setText(stock.getSymbol());
         stockPrice.setText(String.format("%.2f %s", stock.getPrice(), stock.getCurrency()));
-        stockChange.setText(String.format("%.2f (%s)", stock.getChange(), stock.getChangePercent()));
+        stockChange.setText(String.format("%.2f (%s", stock.getChange(), stock.getChangePercent()) + "%)");
         stockOpen.setText(String.format("%s: %.2f", context.getString(R.string.open), stock.getOpen()));
         stockPreviousClose.setText(String.format("%s: %.2f", context.getString(R.string.previous_close),
                 stock.getPreviousClose()));

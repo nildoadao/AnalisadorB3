@@ -90,7 +90,7 @@ public class WorldTradingConnector implements ApiConnector {
             JSONObject json = new JSONObject(response.toString());
             JSONArray jsonData = json.getJSONArray("data");
             String quoteDate = jsonData.getJSONObject(0).getString("last_trade_time");
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss");
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
             StockQuote data = new StockQuote();
             data.setDate(LocalDate.parse(quoteDate, formatter));

@@ -1,4 +1,4 @@
-package br.com.analisadorb3.Adaptors;
+package br.com.analisadorb3.adaptors;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -61,8 +61,8 @@ public class StockAdapter extends BaseAdapter {
         stockName.setText(stocks.get(i).getSymbol());
         stockPrice.setText(String.format("%.2f %s", stocks.get(i).getPrice(),
                 stocks.get(i).getCurrency()));
-        stockChange.setText(String.format("%.2f (%s)",
-                stocks.get(i).getChange(), stocks.get(i).getChangePercent()));
+        stockChange.setText(String.format("%.2f (%s",
+                stocks.get(i).getChange(), stocks.get(i).getChangePercent()) + "%)");
 
         view.setOnClickListener(new View.OnClickListener() {
             @Override
