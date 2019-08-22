@@ -13,7 +13,6 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 import br.com.analisadorb3.R;
-import br.com.analisadorb3.api.AlphaVantageConnector;
 import br.com.analisadorb3.api.ApiConnector;
 import br.com.analisadorb3.api.ApiException;
 import br.com.analisadorb3.api.WorldTradingConnector;
@@ -136,7 +135,7 @@ public class StockInfoActivity extends AppCompatActivity {
         protected List<StockQuote> doInBackground(String... params) {
             List<StockQuote> list;
             try{
-                ApiConnector api = new AlphaVantageConnector(getBaseContext());
+                ApiConnector api = new WorldTradingConnector(getBaseContext());
                 list = api.getDailyTimeSeries(params[0]);
             }
             catch (Exception ex){

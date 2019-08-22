@@ -9,5 +9,6 @@
     <string name="average_change_3">Variação Média 3 Meses</string>
     <string name="no_internet">Sem Conexão de Rede</string>
     <string name="alpha_vantage_request_per_minute_exceeded">Você excedeu 5 requisições por minuto, aguarde e tente novamente.</string>
+    <string name="world_trading_day_limit_exceeded">Você excedeu o limite diario de requisições</string>
     <string name="search_hint">Pesquisar...</string>
 </resources>

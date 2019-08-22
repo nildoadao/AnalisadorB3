@@ -1,10 +1,8 @@
 package br.com.analisadorb3.api;
 
 import android.content.Context;
-import android.content.res.Resources;
-import android.widget.ListView;
-
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -15,6 +13,7 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import br.com.analisadorb3.R;
@@ -43,6 +42,21 @@ public class WorldTradingConnector implements ApiConnector {
     private URL buildSearchEndpointUrl(String search){
         String urlString = String.format("https://api.worldtradingdata.com/api/v1/stock_search?search_term=%s&search_by" +
                         "symbol,name&limit=10&page=1&api_token=%s", search, KEY);
+        try{
+            return new URL(urlString);
+        }
+        catch (Exception ex){
+            return  null;
+        }
+    }
+
+    private URL buildDailySeriesUrl(String symbol){
+        LocalDate currentDate = LocalDate.now();
+        LocalDate fromDate = currentDate.minusMonths(6);
+
+        String urlString = String.format("https://api.worldtradingdata.com/api/v1/history?symbol=%s&sort=newest&date_from=%s" +
+            "&date_to=%s&api_token=%s",symbol, fromDate.toString(), currentDate.toString(), KEY);
+
         try{
             return new URL(urlString);
         }
@@ -102,7 +116,7 @@ public class WorldTradingConnector implements ApiConnector {
             data.setLow(Double.parseDouble(jsonData.getJSONObject(0).getString("day_low")));
             data.setPrice(Double.parseDouble(jsonData.getJSONObject(0).getString("price")));
             data.setVolume(Double.parseDouble(jsonData.getJSONObject(0).getString("volume")));
-            data.setMarketCapital(Double.parseDouble(jsonData.getJSONObject(0).getString("market_cap")));
+            data.setMarketCapital(jsonData.getJSONObject(0).getString("market_cap"));
             data.setLastTradingDay(LocalDate.parse(quoteDate, formatter));
             data.setPreviousClose(Double.parseDouble(jsonData.getJSONObject(0).getString("close_yesterday")));
             data.setChange(Double.parseDouble(jsonData.getJSONObject(0).getString("day_change")));
@@ -167,7 +181,7 @@ public class WorldTradingConnector implements ApiConnector {
                 data.setLow(Double.parseDouble(jsonData.getJSONObject(i).getString("day_low")));
                 data.setPrice(Double.parseDouble(jsonData.getJSONObject(i).getString("price")));
                 data.setVolume(Double.parseDouble(jsonData.getJSONObject(i).getString("volume")));
-                data.setMarketCapital(Double.parseDouble(jsonData.getJSONObject(i).getString("market_cap")));
+                data.setMarketCapital(jsonData.getJSONObject(i).getString("market_cap"));
                 data.setLastTradingDay(LocalDate.parse(quoteDate, formatter));
                 data.setPreviousClose(Double.parseDouble(jsonData.getJSONObject(i).getString("close_yesterday")));
                 data.setChange(Double.parseDouble(jsonData.getJSONObject(i).getString("day_change")));
@@ -251,7 +265,64 @@ public class WorldTradingConnector implements ApiConnector {
 
     @Override
     public List<StockQuote> getDailyTimeSeries(String symbol) throws ApiException {
-        return null;
+        URL url = buildDailySeriesUrl(symbol);
+
+        if(url == null)
+            throw new ApiException("Bad Url");
+
+        HttpURLConnection connection = buildUrlConnection(url);
+
+        if(connection == null)
+            throw new ApiException("Bad Url");
+
+        try {
+
+            int responseCode = connection.getResponseCode();
+
+            if (responseCode != HttpURLConnection.HTTP_OK)
+                throw new ApiException("Fail to get Stock data, code "
+                        + responseCode);
+
+            String inputLine;
+            BufferedReader input = new BufferedReader(
+                    new InputStreamReader(connection.getInputStream()));
+
+            StringBuffer response = new StringBuffer();
+            while ((inputLine = input.readLine()) != null) {
+                response.append(inputLine);
+            }
+            JSONObject json = new JSONObject(response.toString());
+            JSONObject stockData = json.getJSONObject("history");
+            Iterator<String> iterator = stockData.keys();
+            List<StockQuote> stockList = new ArrayList<>();
+
+            while(iterator.hasNext()) {
+                StockQuote stock = new StockQuote();
+                String key = iterator.next();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                stock.setDate(LocalDate.parse(key, formatter));
+                stock.setOpen(Double.parseDouble(stockData.getJSONObject(key).getString("open")));
+                stock.setHigh(Double.parseDouble(stockData.getJSONObject(key).getString("high")));
+                stock.setLow(Double.parseDouble(stockData.getJSONObject(key).getString("low")));
+                stock.setClose(Double.parseDouble(stockData.getJSONObject(key).getString("close")));
+                stock.setVolume(Double.parseDouble(stockData.getJSONObject(key).getString("volume")));
+                stockList.add(stock);
+            }
+            return stockList;
+        }
+        catch (IOException e){
+            throw new ApiException(context.getString(R.string.no_internet));
+        }
+        catch (JSONException e){
+            throw new ApiException(context.getString(R.string.world_trading_day_limit_exceeded));
+        }
+        catch(Exception e){
+            throw new ApiException("Fail to communicate with WorldTrading, "
+                    + e.getMessage());
+        }
+        finally {
+            connection.disconnect();
+        }
     }
 
     @Override

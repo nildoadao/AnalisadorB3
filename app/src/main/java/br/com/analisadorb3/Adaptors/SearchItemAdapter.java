@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import java.util.List;
 import br.com.analisadorb3.R;
@@ -61,9 +62,10 @@ public class SearchItemAdapter extends BaseAdapter {
 
         TextView symbol = view.findViewById(R.id.search_item_symbol);
         TextView company = view.findViewById(R.id.search_item_company);
+        ImageButton icon = view.findViewById(R.id.search_item_icon);
         symbol.setText(stocks.get(i).getSymbol());
         company.setText(stocks.get(i).getCompany());
-
+        icon.setBackgroundResource(R.drawable.plus_icon);
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

@@ -17,7 +17,7 @@ public class StockQuote implements Comparable<Object>{
     private double previousClose;
     private double change;
     private String changePercent;
-    private double marketCapital;
+    private String marketCapital;
     private String currency;
 
 
@@ -91,8 +91,8 @@ public class StockQuote implements Comparable<Object>{
     public void setChangePercent(String changePercent) {
         this.changePercent = changePercent;
     }
-    public double getMarketCapital() { return marketCapital; }
-    public void setMarketCapital(double marketCapital) { this.marketCapital = marketCapital; }
+    public String getMarketCapital() { return marketCapital; }
+    public void setMarketCapital(String marketCapital) { this.marketCapital = marketCapital; }
     public String getCurrency() { return currency; }
     public void setCurrency(String currency) { this.currency = currency; }
 

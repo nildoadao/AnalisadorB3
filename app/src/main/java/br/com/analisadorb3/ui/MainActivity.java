@@ -6,13 +6,14 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import org.json.JSONArray;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import br.com.analisadorb3.R;
 import br.com.analisadorb3.api.ApiConnector;
@@ -24,21 +25,11 @@ import br.com.analisadorb3.adaptors.StockAdapter;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String SAVED_STOCKS = "SavedStocks";
     public static final String SYMBOL_MESSAGE = "br.com.analisadorb3.SYMBOL";
     public static final String COMPANY_MESSAGE = "br.com.analisadorb3.COMPANY";
-    public static final String PRICE_MESSAGE = "br.com.analisadorb3.PRICE";
-    public static final String CURRENCY_MESSAGE = "br.com.analisadorb3.CURRENCY";
-    public static final String CHANGE_MESSAGE = "br.com.analisadorb3.CHANGE";
-    public static final String CHANGE_PERCENT_MESSAGE = "br.com.analisadorb3.CHANGE_PERCENT";
-    public static final String OPEN_MESSAGE = "br.com.analisadorb3.OPEN";
-    public static final String PREVIOUS_CLOSE_MESSAGE = "br.com.analisadorb3.PREVIOUS_CLOSE";
-    public static final String VOLUME_MESSAGE = "br.com.analisadorb3.VOLUME";
-    public static final String DAY_HIGH_MESSAGE = "br.com.analisadorb3.DAY_HIGH";
-    public static final String DAY_LOW_MESSAGE = "br.com.analisadorb3.DAY_LOW";
 
-    private List<String> symbols = Arrays.asList(
-            "B3SA3.SA", "VVAR3.SA", "ITSA4.SA");
-
+    private List<String> symbols;
     private SwipeRefreshLayout refresh;
     private StockListFragment stocks;
     private StockAdapter adapter;
@@ -49,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        symbols = getSymbols();
         FragmentManager manager = getSupportFragmentManager();
         stocks = (StockListFragment) manager.findFragmentByTag("stockListFragment");
 
@@ -69,15 +61,6 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(context, StockInfoActivity.class);
                 intent.putExtra(SYMBOL_MESSAGE, stocks.getData().get(position).getSymbol());
                 intent.putExtra(COMPANY_MESSAGE, stocks.getData().get(position).getCompany());
-                intent.putExtra(PRICE_MESSAGE, stocks.getData().get(position).getPrice());
-                intent.putExtra(CURRENCY_MESSAGE, stocks.getData().get(position).getCurrency());
-                intent.putExtra(CHANGE_PERCENT_MESSAGE, stocks.getData().get(position).getChangePercent());
-                intent.putExtra(CHANGE_MESSAGE, stocks.getData().get(position).getChange());
-                intent.putExtra(OPEN_MESSAGE, stocks.getData().get(position).getOpen());
-                intent.putExtra(PREVIOUS_CLOSE_MESSAGE, stocks.getData().get(position).getPreviousClose());
-                intent.putExtra(VOLUME_MESSAGE, stocks.getData().get(position).getVolume());
-                intent.putExtra(DAY_HIGH_MESSAGE, stocks.getData().get(position).getHigh());
-                intent.putExtra(DAY_LOW_MESSAGE, stocks.getData().get(position).getLow());
                 startActivity(intent);
             }
         });
@@ -102,6 +85,21 @@ public class MainActivity extends AppCompatActivity {
                 new LoadStockTask().execute(symbols);
             }
         });
+    }
+
+    private List<String> getSymbols(){
+        SharedPreferences settings = getSharedPreferences(SAVED_STOCKS, 0);
+        try{
+            JSONArray  json = new JSONArray(settings.getString("favouriteStocks", ""));
+            List<String> list = new ArrayList<>();
+            for(int i = 0; i < json.length(); i++){
+                list.add(json.get(i).toString());
+            }
+            return list;
+        }
+        catch (Exception e){
+            return new ArrayList<>();
+        }
     }
 
     public void onDestroy(){
