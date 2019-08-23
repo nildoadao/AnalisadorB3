@@ -13,6 +13,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,7 @@ import br.com.analisadorb3.models.StockFragment;
 import br.com.analisadorb3.models.StockListFragment;
 import br.com.analisadorb3.models.StockQuote;
 import br.com.analisadorb3.adaptors.SearchItemAdapter;
+import br.com.analisadorb3.util.SettingsUtil;
 
 public class SearchActivity extends AppCompatActivity {
 
@@ -61,12 +63,27 @@ public class SearchActivity extends AppCompatActivity {
             }
         });
 
+        searchItemAdapter.setOnButtonClickListener(new SearchItemAdapter.OnButtonClickListener() {
+            @Override
+            public void onButtonClick(Context context, int position) {
+                SettingsUtil settings = new SettingsUtil(getApplicationContext());
+                if(settings.saveFavouriteStock(searchItemAdapter.getData().get(position).getSymbol()))
+                    Toast.makeText(getBaseContext(), getString(R.string.saved), Toast.LENGTH_SHORT).show();
+                else
+                    Toast.makeText(getBaseContext(), getString(R.string.stocks_saved_limit), Toast.LENGTH_LONG).show();
+
+                searchItemAdapter.notifyDataSetChanged();
+            }
+        });
+
         ListView resultList = findViewById(R.id.search_result_list);
         resultList.setAdapter(searchItemAdapter);
         search.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
                 if(keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_ENTER){
+                    stocksFragment.getData().clear();
+                    searchItemAdapter.notifyDataSetChanged();
                     new SearchTask().execute(search.getText().toString());
                     searchProgress.setVisibility(View.VISIBLE);
                     return true;
@@ -92,8 +109,6 @@ public class SearchActivity extends AppCompatActivity {
 
     private void onSearchCompleted(List<StockQuote> list){
         if(list != null){
-            stocksFragment.getData().clear();
-
             for(StockQuote stock : list)
                 stocksFragment.getData().add(stock);
 

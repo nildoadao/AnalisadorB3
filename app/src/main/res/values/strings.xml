@@ -11,4 +11,11 @@
     <string name="alpha_vantage_request_per_minute_exceeded">Você excedeu 5 requisições por minuto, aguarde e tente novamente.</string>
     <string name="world_trading_day_limit_exceeded">Você excedeu o limite diario de requisições</string>
     <string name="search_hint">Pesquisar...</string>
+    <string name="saved">Salvo</string>
+    <string name="stocks_saved_limit">Você já atingiu o limite de Ações a serem salvas</string>
+    <string name="stop_follow">Parar de Seguir</string>
+    <string name="yes">Sim</string>
+    <string name="no">Não</string>
+    <string name="removed">Removido</string>
+    <string name="remove_fail">Falha ao remover</string>
 </resources>

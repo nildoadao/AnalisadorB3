@@ -1,18 +1,14 @@
 package br.com.analisadorb3.ui;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ListView;
-import org.json.JSONArray;
 import java.util.ArrayList;
 import java.util.List;
 import br.com.analisadorb3.R;
@@ -22,14 +18,12 @@ import br.com.analisadorb3.models.StockListFragment;
 import br.com.analisadorb3.models.StockQuote;
 import br.com.analisadorb3.adaptors.ErrorAdapter;
 import br.com.analisadorb3.adaptors.StockAdapter;
+import br.com.analisadorb3.util.SettingsUtil;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final String SAVED_STOCKS = "SavedStocks";
     public static final String SYMBOL_MESSAGE = "br.com.analisadorb3.SYMBOL";
     public static final String COMPANY_MESSAGE = "br.com.analisadorb3.COMPANY";
-
-    private List<String> symbols;
     private SwipeRefreshLayout refresh;
     private StockListFragment stocks;
     private StockAdapter adapter;
@@ -40,17 +34,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        symbols = getSymbols();
-        FragmentManager manager = getSupportFragmentManager();
+        final FragmentManager manager = getSupportFragmentManager();
         stocks = (StockListFragment) manager.findFragmentByTag("stockListFragment");
 
-        if(stocks == null){
+        if(stocks == null || getFavouriteSymbols().size() != stocks.getData().size()){
             stocks = new StockListFragment();
             stocks.setData(new ArrayList<StockQuote>());
             manager.beginTransaction().add(stocks, "stockListFragment").commit();
             refresh = findViewById(R.id.pullToRefresh);
             refresh.setRefreshing(true);
-            new LoadStockTask().execute(symbols);
+            new LoadStockTask().execute(getFavouriteSymbols());
         }
 
         list = findViewById(R.id.stock_list);
@@ -64,6 +57,24 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        adapter.setOnLongClickListener(new StockAdapter.OnLongClickListener() {
+            @Override
+            public boolean OnLongClick(Context context, int position) {
+                String symbol = stocks.getData().get(position).getSymbol();
+                String message = getString(R.string.stop_follow) + " " + symbol + " ?";
+                StopFollowDialog stopFollowDialog = StopFollowDialog.newInstance(message, symbol);
+                stopFollowDialog.setOndialogFinishListener(new StopFollowDialog.OnDialogFinishListener() {
+                    @Override
+                    public void onDialogFinish(boolean result, String message) {
+                        onStopFollowFinished(result, message);
+                    }
+                });
+                stopFollowDialog.show(manager, "stopFollowFragment");
+                 return true;
+            }
+        });
+
         ImageButton search = findViewById(R.id.search_button);
         search.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -82,29 +93,36 @@ public class MainActivity extends AppCompatActivity {
                 if(!refresh.isRefreshing())
                     refresh.setRefreshing(true);
 
-                new LoadStockTask().execute(symbols);
+                new LoadStockTask().execute(getFavouriteSymbols());
             }
         });
     }
 
-    private List<String> getSymbols(){
-        SharedPreferences settings = getSharedPreferences(SAVED_STOCKS, 0);
-        try{
-            JSONArray  json = new JSONArray(settings.getString("favouriteStocks", ""));
-            List<String> list = new ArrayList<>();
-            for(int i = 0; i < json.length(); i++){
-                list.add(json.get(i).toString());
+    private void onStopFollowFinished(boolean result, String message){
+        if(result){
+            StockQuote stockToRemove = null;
+
+            for(StockQuote stock : stocks.getData()){
+                if(stock.getSymbol() == message){
+                    stockToRemove = stock;
+                }
             }
-            return list;
-        }
-        catch (Exception e){
-            return new ArrayList<>();
+
+            if(stockToRemove != null){
+                stocks.getData().remove(stockToRemove);
+                adapter.notifyDataSetChanged();
+            }
         }
     }
 
     public void onDestroy(){
         super.onDestroy();
         stocks.setData(stocks.getData());
+    }
+
+    private List<String> getFavouriteSymbols(){
+        SettingsUtil settings = new SettingsUtil(getApplicationContext());
+        return settings.getFavouriteStocks();
     }
 
     private void onRefreshComplete(List<StockQuote> list){
@@ -131,14 +149,12 @@ public class MainActivity extends AppCompatActivity {
     public class LoadStockTask extends AsyncTask<List<String>, Void, List<StockQuote>> {
         @Override
         protected List<StockQuote> doInBackground(List<String>... params) {
-            List<StockQuote> list = new ArrayList<>();
             try {
                 ApiConnector api = new WorldTradingConnector(getBaseContext());
-                list = api.getLastQuote(params[0]);
+                return api.getLastQuote(params[0]);
             } catch (Exception e) {
                 return null;
             }
-            return list;
         }
 
         @Override

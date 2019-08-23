@@ -10,19 +10,30 @@ import android.widget.TextView;
 import java.util.List;
 import br.com.analisadorb3.R;
 import br.com.analisadorb3.models.StockQuote;
+import br.com.analisadorb3.util.SettingsUtil;
 
 public class SearchItemAdapter extends BaseAdapter {
     Context context;
     List<StockQuote> stocks;
+    SettingsUtil settings;
     private static LayoutInflater inflater = null;
-    private OnItemClickListener listener;
+    private OnItemClickListener clickListener;
+    private OnButtonClickListener buttonClickListener;
+
+    public interface OnButtonClickListener{
+        void onButtonClick(Context context, int position);
+    }
 
     public interface OnItemClickListener{
         void onItemClick(Context context, int position);
     }
 
     public void setOnItemClickListener(OnItemClickListener listener){
-        this.listener = listener;
+        this.clickListener = listener;
+    }
+
+    public void setOnButtonClickListener(OnButtonClickListener listener){
+        this.buttonClickListener = listener;
     }
 
     public SearchItemAdapter(Context context, List<StockQuote> stocks){
@@ -30,6 +41,7 @@ public class SearchItemAdapter extends BaseAdapter {
         this.stocks = stocks;
         inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        settings = new SettingsUtil(context);
     }
 
     public List<StockQuote> getData(){
@@ -65,12 +77,30 @@ public class SearchItemAdapter extends BaseAdapter {
         ImageButton icon = view.findViewById(R.id.search_item_icon);
         symbol.setText(stocks.get(i).getSymbol());
         company.setText(stocks.get(i).getCompany());
-        icon.setBackgroundResource(R.drawable.plus_icon);
+
+        final boolean favouriteStock = settings.getFavouriteStocks().contains(stocks.get(i).getSymbol());
+
+        if(favouriteStock){
+            icon.setBackgroundResource(R.drawable.star_icon);
+        }
+        else{
+            icon.setBackgroundResource(R.drawable.plus_icon);
+        }
+
+        icon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(buttonClickListener != null && !favouriteStock){
+                    buttonClickListener.onButtonClick(view.getContext(), i);
+                }
+            }
+        });
+
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(listener != null)
-                    listener.onItemClick(view.getContext(), i);
+                if(clickListener != null)
+                    clickListener.onItemClick(view.getContext(), i);
             }
         });
 

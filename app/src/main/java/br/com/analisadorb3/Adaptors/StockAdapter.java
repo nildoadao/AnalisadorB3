@@ -18,14 +18,20 @@ public class StockAdapter extends BaseAdapter {
     List<StockQuote> stocks;
     private static LayoutInflater inflater = null;
     private OnItemClickListener listener;
+    private OnLongClickListener longClickListener;
 
     public interface OnItemClickListener{
         void onItemClick(Context context, int position);
     }
 
+    public interface OnLongClickListener{
+        boolean OnLongClick(Context context, int position);
+    }
+
     public void setOnItemClickListener(OnItemClickListener listener){
         this.listener = listener;
     }
+    public void setOnLongClickListener(OnLongClickListener listener) {this.longClickListener = listener;}
 
     public StockAdapter(Context context, List<StockQuote> stocks){
         this.context = context;
@@ -72,6 +78,16 @@ public class StockAdapter extends BaseAdapter {
                 }
             }
         });
+
+        view.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                if(longClickListener != null)
+                    return longClickListener.OnLongClick(view.getContext(), i);
+                return false;
+            }
+        });
+
         if(stocks.get(i).getChange() >= 0) {
             stockChange.setTextColor(Color.argb(255, 0, 127, 0));
         }
