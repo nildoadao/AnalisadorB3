@@ -56,27 +56,23 @@ public class StockAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(final int i, View view, ViewGroup viewGroup) {
+    public View getView(int i, View view, ViewGroup viewGroup) {
 
         if (view == null)
             view = inflater.inflate(R.layout.stock_item, viewGroup, false);
 
-        TextView stockName = view.findViewById(R.id.stock_name);
-        TextView stockPrice = view.findViewById(R.id.stock_info_price);
-        TextView stockChange = view.findViewById(R.id.stock_change_percent);
-        ImageView arrow = view.findViewById(R.id.stock_arrow_status);
+        defineBasicInformation(view, stocks.get(i));
+        defineChangeText(view, stocks.get(i));
+        setListeners(view, i);
+        return view;
+    }
 
-        stockName.setText(stocks.get(i).getSymbol());
-        stockPrice.setText(String.format("%.2f %s", stocks.get(i).getPrice(),
-                stocks.get(i).getCurrency()));
-        stockChange.setText(String.format("%.2f (%s",
-                stocks.get(i).getChange(), stocks.get(i).getChangePercent()) + "%)");
-
+    private void setListeners(View view, final int position){
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if(listener != null){
-                    listener.onItemClick(view.getContext(), i);
+                    listener.onItemClick(view.getContext(), position);
                 }
             }
         });
@@ -85,19 +81,44 @@ public class StockAdapter extends BaseAdapter {
             @Override
             public boolean onLongClick(View view) {
                 if(longClickListener != null)
-                    return longClickListener.OnLongClick(view.getContext(), i);
+                    return longClickListener.OnLongClick(view.getContext(), position);
                 return false;
             }
         });
+    }
 
-        if(stocks.get(i).getChange() >= 0) {
+    private void defineBasicInformation(View view, StockQuote stock){
+        TextView stockName = view.findViewById(R.id.stock_name);
+        TextView stockPrice = view.findViewById(R.id.stock_info_price);
+        stockName.setText(stock.getSymbol());
+        stockPrice.setText(String.format("%s %s", stock.getPrice(),
+                stock.getCurrency()));
+    }
+
+    private void defineChangeText(View view, StockQuote stock){
+        TextView stockChange = view.findViewById(R.id.stock_change_percent);
+        ImageView arrow = view.findViewById(R.id.stock_arrow_status);
+        stockChange.setText(String.format("%s (%s",
+                stock.getChange(), stock.getChangePercent()) + "%)");
+
+        Double change;
+        try {
+            change = Double.parseDouble(stock.getChange());
+        }
+        catch (Exception e){
+            change = null;
+        }
+
+        if(change == null){
+            stockChange.setVisibility(View.INVISIBLE);
+        }
+        else if(change >= 0) {
             stockChange.setTextColor(Color.argb(255, 0, 127, 0));
             arrow.setImageResource(R.drawable.arrow_up);
         }
-        else{
+        else {
             stockChange.setTextColor(Color.RED);
             arrow.setImageResource(R.drawable.arrow_down);
         }
-        return view;
     }
 }

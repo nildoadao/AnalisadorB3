@@ -1,6 +1,5 @@
 package br.com.analisadorb3.ui;
 
-
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -20,7 +19,7 @@ public class StopFollowDialog extends DialogFragment {
         void onDialogFinish(boolean result, String message);
     }
 
-    public void setOndialogFinishListener(OnDialogFinishListener listener){
+    public void setOnDialogFinishListener(OnDialogFinishListener listener){
         this.listener = listener;
     }
 

@@ -6,16 +6,16 @@ public class StockQuote implements Comparable<Object>{
 
     private String company;
     private String symbol;
-    private double price;
+    private String price;
     private LocalDate date;
-    private double open;
-    private double high;
-    private double low;
-    private double close;
-    private double volume;
+    private String open;
+    private String high;
+    private String low;
+    private String close;
+    private String volume;
     private LocalDate lastTradingDay;
-    private double previousClose;
-    private double change;
+    private String previousClose;
+    private String change;
     private String changePercent;
     private String marketCapital;
     private String currency;
@@ -29,8 +29,8 @@ public class StockQuote implements Comparable<Object>{
     public void setSymbol(String symbol){
         this.symbol = symbol;
     }
-    public double getPrice(){ return price; }
-    public void setPrice(double price){
+    public String getPrice(){ return price; }
+    public void setPrice(String price){
         this.price = price;
     }
     public LocalDate getDate() {
@@ -39,50 +39,48 @@ public class StockQuote implements Comparable<Object>{
     public void setDate(LocalDate date) {
         this.date = date;
     }
-    public double getOpen() {
-        return open;
-    }
-    public void setOpen(double open) {
+    public String getOpen() { return open; }
+    public void setOpen(String open) {
         this.open = open;
     }
-    public double getHigh() {
+    public String getHigh() {
         return high;
     }
-    public void setHigh(double high) {
+    public void setHigh(String high) {
         this.high = high;
     }
-    public double getLow() {
+    public String getLow() {
         return low;
     }
-    public void setLow(double low) {
+    public void setLow(String low) {
         this.low = low;
     }
-    public double getClose() {
+    public String getClose() {
         return close;
     }
-    public void setClose(double close) {
+    public void setClose(String close) {
         this.close = close;
     }
-    public double getVolume() {
+    public String getVolume() {
         return volume;
     }
-    public void setVolume(double volume) {
+    public void setVolume(String volume) {
         this.volume = volume;
     }
     public LocalDate getLastTradingDay() {
         return lastTradingDay;
     }
     public void setLastTradingDay(LocalDate lastTradingDay) { this.lastTradingDay = lastTradingDay; }
-    public double getPreviousClose() {
+    public String getPreviousClose() {
         return previousClose;
     }
-    public void setPreviousClose(double previousClose) {
+    public void setPreviousClose(String previousClose) {
         this.previousClose = previousClose;
     }
-    public double getChange() {
+    public String getChange() {
         return change;
     }
-    public void setChange(double change) {
+    public void setChange(String change) {
         this.change = change;
     }
     public String getChangePercent() {

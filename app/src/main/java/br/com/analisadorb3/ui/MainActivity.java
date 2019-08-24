@@ -25,57 +25,47 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String SYMBOL_MESSAGE = "br.com.analisadorb3.SYMBOL";
     public static final String COMPANY_MESSAGE = "br.com.analisadorb3.COMPANY";
-    private SwipeRefreshLayout refresh;
-    private StockListFragment stocks;
-    private StockAdapter adapter;
-    private ErrorAdapter errorAdapter;
-    private ListView list;
+
+    private StockListFragment stocksFragment;
+    private StockAdapter stockAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        final FragmentManager manager = getSupportFragmentManager();
-        stocks = (StockListFragment) manager.findFragmentByTag("stockListFragment");
+        initStocksFragment();
+        initStockAdapter();
+        initSearchButton();
+        initStockList();
+        initRefreshLayout();
+    }
 
-        if(stocks == null){
-            stocks = new StockListFragment();
-            stocks.setData(new ArrayList<StockQuote>());
-            manager.beginTransaction().add(stocks, "stockListFragment").commit();
-            refresh = findViewById(R.id.pullToRefresh);
-            refresh.setRefreshing(true);
-            new LoadStockTask().execute(getFavouriteSymbols());
+    private void initStocksFragment(){
+        FragmentManager manager = getSupportFragmentManager();
+        stocksFragment = (StockListFragment) manager.findFragmentByTag("stockListFragment");
+
+        if(stocksFragment == null){
+            stocksFragment = new StockListFragment();
+            stocksFragment.setData(new ArrayList<StockQuote>());
+            manager.beginTransaction().add(stocksFragment, "stockListFragment").commit();
+            if(getFavouriteSymbols().size() > 0){
+                SwipeRefreshLayout refreshLayout = findViewById(R.id.pullToRefresh);
+                refreshLayout.setRefreshing(true);
+                new LoadStockTask().execute(getFavouriteSymbols());
+            }
         }
+    }
 
-        list = findViewById(R.id.stock_list);
-        adapter = new StockAdapter(this, stocks.getData());
-        adapter.setOnItemClickListener(new StockAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(Context context, int position) {
-                Intent intent = new Intent(context, StockInfoActivity.class);
-                intent.putExtra(SYMBOL_MESSAGE, stocks.getData().get(position).getSymbol());
-                intent.putExtra(COMPANY_MESSAGE, stocks.getData().get(position).getCompany());
-                startActivity(intent);
-            }
-        });
+    private void initStockList(){
+        if(getFavouriteSymbols().size() == 0)
+            setEmptyWalletAdapter();
+        else {
+            ListView list = findViewById(R.id.stock_list);
+            list.setAdapter(stockAdapter);
+        }
+    }
 
-        adapter.setOnLongClickListener(new StockAdapter.OnLongClickListener() {
-            @Override
-            public boolean OnLongClick(Context context, int position) {
-                String symbol = stocks.getData().get(position).getSymbol();
-                String message = getString(R.string.stop_follow) + " " + symbol + " ?";
-                StopFollowDialog stopFollowDialog = StopFollowDialog.newInstance(message, symbol);
-                stopFollowDialog.setOndialogFinishListener(new StopFollowDialog.OnDialogFinishListener() {
-                    @Override
-                    public void onDialogFinish(boolean result, String message) {
-                        onStopFollowFinished(result, message);
-                    }
-                });
-                stopFollowDialog.show(manager, "stopFollowFragment");
-                 return true;
-            }
-        });
-
+    private void initSearchButton(){
         ImageButton search = findViewById(R.id.search_button);
         search.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -84,17 +74,47 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
 
-        list.setAdapter(adapter);
-        refresh = findViewById(R.id.pullToRefresh);
-
-        refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+    private void initRefreshLayout(){
+        final SwipeRefreshLayout refreshLayout = findViewById(R.id.pullToRefresh);
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if(!refresh.isRefreshing())
-                    refresh.setRefreshing(true);
+                if(!refreshLayout.isRefreshing())
+                    refreshLayout.setRefreshing(true);
 
                 new LoadStockTask().execute(getFavouriteSymbols());
+            }
+        });
+    }
+
+    private void initStockAdapter(){
+        stockAdapter = new StockAdapter(this, stocksFragment.getData());
+        stockAdapter.setOnItemClickListener(new StockAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(Context context, int position) {
+                Intent intent = new Intent(context, StockInfoActivity.class);
+                intent.putExtra(SYMBOL_MESSAGE, stocksFragment.getData().get(position).getSymbol());
+                intent.putExtra(COMPANY_MESSAGE, stocksFragment.getData().get(position).getCompany());
+                startActivity(intent);
+            }
+        });
+
+        stockAdapter.setOnLongClickListener(new StockAdapter.OnLongClickListener() {
+            @Override
+            public boolean OnLongClick(Context context, int position) {
+                String symbol = stocksFragment.getData().get(position).getSymbol();
+                String message = getString(R.string.stop_follow) + " " + symbol + " ?";
+                StopFollowDialog stopFollowDialog = StopFollowDialog.newInstance(message, symbol);
+                stopFollowDialog.setOnDialogFinishListener(new StopFollowDialog.OnDialogFinishListener() {
+                    @Override
+                    public void onDialogFinish(boolean result, String message) {
+                        onStopFollowFinished(result, message);
+                    }
+                });
+                stopFollowDialog.show(getSupportFragmentManager(), "stopFollowFragment");
+                return true;
             }
         });
     }
@@ -103,29 +123,25 @@ public class MainActivity extends AppCompatActivity {
         if(result){
             StockQuote stockToRemove = null;
 
-            for(StockQuote stock : stocks.getData()){
-                if(stock.getSymbol() == message){
+            for(StockQuote stock : stocksFragment.getData()){
+                if(stock.getSymbol().equals(message)){
                     stockToRemove = stock;
                 }
             }
 
             if(stockToRemove != null){
-                stocks.getData().remove(stockToRemove);
-                adapter.notifyDataSetChanged();
+                stocksFragment.getData().remove(stockToRemove);
+                stockAdapter.notifyDataSetChanged();
             }
 
-            if(stocks.getData().size() == 0){
-                ListView listView = findViewById(R.id.stock_list);
-                EmptyWalletAdapter emptyWalletAdapter = new EmptyWalletAdapter(this);
-                listView.setAdapter(emptyWalletAdapter);
-                return;
-            }
+            if(stocksFragment.getData().size() == 0)
+                setEmptyWalletAdapter();
         }
     }
 
     public void onDestroy(){
         super.onDestroy();
-        stocks.setData(stocks.getData());
+        stocksFragment.setData(stocksFragment.getData());
     }
 
     private List<String> getFavouriteSymbols(){
@@ -133,40 +149,54 @@ public class MainActivity extends AppCompatActivity {
         return settings.getFavouriteStocks();
     }
 
+    private void setErrorAdapter(String message){
+        ListView listView = findViewById(R.id.stock_list);
+        SwipeRefreshLayout refreshLayout = findViewById(R.id.pullToRefresh);
+        ErrorAdapter errorAdapter = new ErrorAdapter(this, message);
+        listView.setAdapter(errorAdapter);
+        refreshLayout.setRefreshing(false);
+    }
+
+    private void setEmptyWalletAdapter(){
+        ListView listView = findViewById(R.id.stock_list);
+        SwipeRefreshLayout refreshLayout = findViewById(R.id.pullToRefresh);
+        EmptyWalletAdapter emptyWalletAdapter = new EmptyWalletAdapter(this);
+        listView.setAdapter(emptyWalletAdapter);
+        refreshLayout.setRefreshing(false);
+    }
+
     private void onRefreshComplete(List<StockQuote> list){
         ListView listView = findViewById(R.id.stock_list);
+        SwipeRefreshLayout refreshLayout = findViewById(R.id.pullToRefresh);
+        listView.setAdapter(stockAdapter);
+        stocksFragment.getData().clear();
 
-        if(getFavouriteSymbols().size() == 0){
-            EmptyWalletAdapter emptyWalletAdapter = new EmptyWalletAdapter(this);
-            listView.setAdapter(emptyWalletAdapter);
-            refresh.setRefreshing(false);
-            return;
-        }
+        for(StockQuote stock : list)
+            stocksFragment.getData().add(stock);
 
-        if(list == null){
-            errorAdapter = new ErrorAdapter(this, getString(R.string.no_internet));
-            listView.setAdapter(errorAdapter);
-            refresh.setRefreshing(false);
-        }
-        else {
-            listView.setAdapter(adapter);
-            stocks.getData().clear();
-
-            for(StockQuote stock : list)
-                stocks.getData().add(stock);
-
-            adapter.notifyDataSetChanged();
-            refresh.setRefreshing(false);
-        }
+        stockAdapter.notifyDataSetChanged();
+        refreshLayout.setRefreshing(false);
     }
 
     public class LoadStockTask extends AsyncTask<List<String>, Void, List<StockQuote>> {
+
+        private String errorMessage;
+
+        private void setErrorMessage(String message){
+            errorMessage = message;
+        }
+
+        private String getErrorMessage(){
+            return errorMessage;
+        }
+
         @Override
         protected List<StockQuote> doInBackground(List<String>... params) {
             try {
                 ApiConnector api = new WorldTradingConnector(getBaseContext());
                 return api.getLastQuote(params[0]);
             } catch (Exception e) {
+                setErrorMessage(e.getMessage());
                 return null;
             }
         }
@@ -174,7 +204,11 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(List<StockQuote> result) {
             super.onPostExecute(result);
-            onRefreshComplete(result);
+
+            if(result == null)
+                setErrorAdapter(getErrorMessage());
+            else
+                onRefreshComplete(result);
         }
     }
 }

@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 import java.util.List;
+
 import br.com.analisadorb3.R;
 import br.com.analisadorb3.logic.StockCalculator;
 import br.com.analisadorb3.models.StockQuote;
@@ -47,34 +48,98 @@ public class StockInfoAdapter extends BaseAdapter {
         if (view == null)
             view = inflater.inflate(R.layout.stock_info_item, viewGroup, false);
 
+        defineBasicInformation(view);
+        defineDayChangeText(view);
+        defineVolumeText(view);
+        defineDayRangeText(view);
+        defineAverageChangeText(view);
+        return view;
+    }
+
+    private void defineBasicInformation(View view){
         TextView stockSymbol = view.findViewById(R.id.stock_info_symbol);
         TextView stockPrice = view.findViewById(R.id.stock_info_price);
-        TextView stockChange = view.findViewById(R.id.stock_info_change);
         TextView stockOpen = view.findViewById(R.id.stock_info_open);
         TextView stockPreviousClose = view.findViewById(R.id.stock_info_previous_close);
-        TextView stockVolume = view.findViewById(R.id.stock_info_volume);
-        TextView stockDayRange = view.findViewById(R.id.stock_info_day_range);
-        TextView stockAverageRange3 = view.findViewById(R.id.stock_info_average_range_3);
 
         stockSymbol.setText(stock.getSymbol());
-        stockPrice.setText(String.format("%.2f %s", stock.getPrice(), stock.getCurrency()));
-        stockChange.setText(String.format("%.2f (%s", stock.getChange(), stock.getChangePercent()) + "%)");
-        stockOpen.setText(String.format("%s: %.2f", context.getString(R.string.open), stock.getOpen()));
-        stockPreviousClose.setText(String.format("%s: %.2f", context.getString(R.string.previous_close),
+        stockPrice.setText(String.format("%s %s", stock.getPrice(), stock.getCurrency()));
+        stockOpen.setText(String.format("%s: %s", context.getString(R.string.open), stock.getOpen()));
+        stockPreviousClose.setText(String.format("%s: %s", context.getString(R.string.previous_close),
                 stock.getPreviousClose()));
-        stockVolume.setText(String.format("%s: %s", context.getString(R.string.volume),
-                StockCalculator.doublePrettify(stock.getVolume())));
-        stockDayRange.setText(String.format("%s: %.2f - %.2f (%.2f)", context.getString(R.string.day_change),
-                stock.getLow(), stock.getHigh(), (stock.getHigh() - stock.getLow())));
+    }
 
-        double averageRange = StockCalculator.getAverageVariation(list, 3);
-        stockAverageRange3.setText(String.format("%s: %.2f", context.getString(R.string.average_change_3), averageRange));
+    private void defineDayChangeText(View view){
+        TextView stockChange = view.findViewById(R.id.stock_info_change);
+        stockChange.setText(String.format("%s (%s", stock.getChange(), stock.getChangePercent()) + "%)");
+        Double dayChange;
+        try{
+            dayChange = Double.parseDouble(stock.getChange());
+        }
+        catch (Exception e){
+            dayChange = null;
+        }
 
-        if(stock.getChange() >= 0)
+        if(dayChange == null){
+            stockChange.setText("-");
+        }
+        else if(dayChange >= 0)
             stockChange.setTextColor(Color.argb(255, 0, 127, 0));
         else
             stockChange.setTextColor(Color.RED);
+    }
 
-        return view;
+    private void defineAverageChangeText(View view){
+        TextView stockAverageRange3 = view.findViewById(R.id.stock_info_average_range_3);
+        try{
+            double averageRange = StockCalculator.getAverageVariation(list, 3);
+            stockAverageRange3.setText(String.format("%s: %.2f", context.getString(R.string.average_change_3), averageRange));
+        }
+        catch (Exception e){
+            stockAverageRange3.setText(String.format("%s: N/A", context.getString(R.string.average_change_3)));
+        }
+    }
+
+    private void defineVolumeText(View view){
+        TextView stockVolume = view.findViewById(R.id.stock_info_volume);
+
+        Double volume;
+        try{
+            volume = Double.parseDouble(stock.getVolume());
+        }
+        catch (Exception e){
+            volume = null;
+        }
+
+        if(volume == null){
+            stockVolume.setText(String.format("%s: N/A", context.getString(R.string.volume)));
+        }
+        else {
+            stockVolume.setText(String.format("%s: %s", context.getString(R.string.volume),
+                    StockCalculator.doublePrettify(volume)));
+        }
+    }
+
+    private void defineDayRangeText(View view){
+        TextView stockDayRange = view.findViewById(R.id.stock_info_day_range);
+        Double dayHigh;
+        Double dayLow;
+
+        try{
+            dayHigh = Double.parseDouble(stock.getHigh());
+            dayLow = Double.parseDouble(stock.getLow());
+        }
+        catch (Exception e){
+            dayHigh = null;
+            dayLow = null;
+        }
+
+        if(dayHigh == null || dayLow == null){
+            stockDayRange.setText(String.format("%s: N/A", context.getString(R.string.day_change)));
+        }
+        else {
+            stockDayRange.setText(String.format("%s: %s - %s (%.2f)", context.getString(R.string.day_change),
+                    stock.getLow(), stock.getHigh(), (dayHigh - dayLow)));
+        }
     }
 }

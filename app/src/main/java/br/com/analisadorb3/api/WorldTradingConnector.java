@@ -73,6 +73,7 @@ public class WorldTradingConnector implements ApiConnector {
             return null;
         }
     }
+
     @Override
     public StockQuote getLastQuote(String symbol) throws ApiException {
         URL url = buildLastQuoteUrl(symbol);
@@ -111,15 +112,15 @@ public class WorldTradingConnector implements ApiConnector {
             data.setCompany(jsonData.getJSONObject(0).getString("name"));
             data.setSymbol(jsonData.getJSONObject(0).getString("symbol"));
             data.setCurrency(jsonData.getJSONObject(0).getString("currency"));
-            data.setOpen(Double.parseDouble(jsonData.getJSONObject(0).getString("price_open")));
-            data.setHigh(Double.parseDouble(jsonData.getJSONObject(0).getString("day_high")));
-            data.setLow(Double.parseDouble(jsonData.getJSONObject(0).getString("day_low")));
-            data.setPrice(Double.parseDouble(jsonData.getJSONObject(0).getString("price")));
-            data.setVolume(Double.parseDouble(jsonData.getJSONObject(0).getString("volume")));
+            data.setOpen(jsonData.getJSONObject(0).getString("price_open"));
+            data.setHigh(jsonData.getJSONObject(0).getString("day_high"));
+            data.setLow(jsonData.getJSONObject(0).getString("day_low"));
+            data.setPrice(jsonData.getJSONObject(0).getString("price"));
+            data.setVolume(jsonData.getJSONObject(0).getString("volume"));
             data.setMarketCapital(jsonData.getJSONObject(0).getString("market_cap"));
             data.setLastTradingDay(LocalDate.parse(quoteDate, formatter));
-            data.setPreviousClose(Double.parseDouble(jsonData.getJSONObject(0).getString("close_yesterday")));
-            data.setChange(Double.parseDouble(jsonData.getJSONObject(0).getString("day_change")));
+            data.setPreviousClose(jsonData.getJSONObject(0).getString("close_yesterday"));
+            data.setChange(jsonData.getJSONObject(0).getString("day_change"));
             data.setChangePercent(jsonData.getJSONObject(0).getString("change_pct"));
             return data;
         }
@@ -176,15 +177,15 @@ public class WorldTradingConnector implements ApiConnector {
                 data.setCompany(jsonData.getJSONObject(i).getString("name"));
                 data.setSymbol(jsonData.getJSONObject(i).getString("symbol"));
                 data.setCurrency(jsonData.getJSONObject(i).getString("currency"));
-                data.setOpen(Double.parseDouble(jsonData.getJSONObject(i).getString("price_open")));
-                data.setHigh(Double.parseDouble(jsonData.getJSONObject(i).getString("day_high")));
-                data.setLow(Double.parseDouble(jsonData.getJSONObject(i).getString("day_low")));
-                data.setPrice(Double.parseDouble(jsonData.getJSONObject(i).getString("price")));
-                data.setVolume(Double.parseDouble(jsonData.getJSONObject(i).getString("volume")));
+                data.setOpen(jsonData.getJSONObject(i).getString("price_open"));
+                data.setHigh(jsonData.getJSONObject(i).getString("day_high"));
+                data.setLow(jsonData.getJSONObject(i).getString("day_low"));
+                data.setPrice(jsonData.getJSONObject(i).getString("price"));
+                data.setVolume(jsonData.getJSONObject(i).getString("volume"));
                 data.setMarketCapital(jsonData.getJSONObject(i).getString("market_cap"));
                 data.setLastTradingDay(LocalDate.parse(quoteDate, formatter));
-                data.setPreviousClose(Double.parseDouble(jsonData.getJSONObject(i).getString("close_yesterday")));
-                data.setChange(Double.parseDouble(jsonData.getJSONObject(i).getString("day_change")));
+                data.setPreviousClose(jsonData.getJSONObject(i).getString("close_yesterday"));
+                data.setChange(jsonData.getJSONObject(i).getString("day_change"));
                 data.setChangePercent(jsonData.getJSONObject(i).getString("change_pct"));
                 stocks.add(data);
             }
@@ -240,7 +241,7 @@ public class WorldTradingConnector implements ApiConnector {
                 data.setCompany(jsonData.getJSONObject(i).getString("name"));
                 data.setSymbol(jsonData.getJSONObject(i).getString("symbol"));
                 data.setCurrency(jsonData.getJSONObject(i).getString("currency"));
-                data.setPrice(Double.parseDouble(jsonData.getJSONObject(i).getString("price")));
+                data.setPrice(jsonData.getJSONObject(i).getString("price"));
                 stocks.add(data);
             }
 
@@ -301,11 +302,11 @@ public class WorldTradingConnector implements ApiConnector {
                 String key = iterator.next();
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 stock.setDate(LocalDate.parse(key, formatter));
-                stock.setOpen(Double.parseDouble(stockData.getJSONObject(key).getString("open")));
-                stock.setHigh(Double.parseDouble(stockData.getJSONObject(key).getString("high")));
-                stock.setLow(Double.parseDouble(stockData.getJSONObject(key).getString("low")));
-                stock.setClose(Double.parseDouble(stockData.getJSONObject(key).getString("close")));
-                stock.setVolume(Double.parseDouble(stockData.getJSONObject(key).getString("volume")));
+                stock.setOpen(stockData.getJSONObject(key).getString("open"));
+                stock.setHigh(stockData.getJSONObject(key).getString("high"));
+                stock.setLow(stockData.getJSONObject(key).getString("low"));
+                stock.setClose(stockData.getJSONObject(key).getString("close"));
+                stock.setVolume(stockData.getJSONObject(key).getString("volume"));
                 stockList.add(stock);
             }
             return stockList;

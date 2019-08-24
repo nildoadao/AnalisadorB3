@@ -3,11 +3,13 @@ package br.com.analisadorb3.logic;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.UnknownFormatConversionException;
+
 import br.com.analisadorb3.models.StockQuote;
 
 public class StockCalculator {
 
-    public static double getAverageVariation(List<StockQuote> list, int months) {
+    public static double getAverageVariation(List<StockQuote> list, int months) throws IllegalArgumentException{
 
         double totalVariation = 0;
         int valuesCount = 0;
@@ -16,8 +18,25 @@ public class StockCalculator {
 
         for(int i = list.size() - 1 ; i >= 0; i--) {
 
+            StockQuote quote = list.get(i);
+            Double dayHigh;
+            Double dayLow;
+
+            try {
+                dayHigh = Double.parseDouble(quote.getHigh());
+                dayLow = Double.parseDouble(quote.getLow());
+            }
+            catch (Exception e){
+                dayHigh = null;
+                dayLow = null;
+            }
+
+            if(dayHigh == null || dayLow == null){
+                throw new IllegalArgumentException("Fail to get DayHigh, DayLow");
+            }
+
             if(list.get(i).getDate().isAfter(currentDate.minusMonths(months))) {
-                totalVariation += list.get(i).getHigh() - list.get(i).getLow();
+                totalVariation += dayHigh - dayLow;
                 valuesCount++;
             }
             else {

@@ -101,14 +101,14 @@ public class AlphaVantageConnector implements ApiConnector {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
             data.setDate(LocalDate.parse(quoteDate, formatter));
             data.setSymbol(globalQuote.getString("01. symbol"));
-            data.setOpen(Double.parseDouble(globalQuote.getString("02. open")));
-            data.setHigh(Double.parseDouble(globalQuote.getString("03. high")));
-            data.setLow(Double.parseDouble(globalQuote.getString("04. low")));
-            data.setPrice(Double.parseDouble(globalQuote.getString("05. price")));
-            data.setVolume(Double.parseDouble(globalQuote.getString("06. volume")));
+            data.setOpen(globalQuote.getString("02. open"));
+            data.setHigh(globalQuote.getString("03. high"));
+            data.setLow(globalQuote.getString("04. low"));
+            data.setPrice(globalQuote.getString("05. price"));
+            data.setVolume(globalQuote.getString("06. volume"));
             data.setLastTradingDay(LocalDate.parse(quoteDate, formatter));
-            data.setPreviousClose(Double.parseDouble(globalQuote.getString("08. previous close")));
-            data.setChange(Double.parseDouble(globalQuote.getString("09. change")));
+            data.setPreviousClose(globalQuote.getString("08. previous close"));
+            data.setChange(globalQuote.getString("09. change"));
             data.setChangePercent(globalQuote.getString("10. change percent"));
             return data;
         }
@@ -170,11 +170,11 @@ public class AlphaVantageConnector implements ApiConnector {
                 String key = iterator.next();
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
                 stock.setDate(LocalDate.parse(key, formatter));
-                stock.setOpen(Double.parseDouble(stockData.getJSONObject(key).getString("1. open")));
-                stock.setHigh(Double.parseDouble(stockData.getJSONObject(key).getString("2. high")));
-                stock.setLow(Double.parseDouble(stockData.getJSONObject(key).getString("3. low")));
-                stock.setClose(Double.parseDouble(stockData.getJSONObject(key).getString("4. close")));
-                stock.setVolume(Double.parseDouble(stockData.getJSONObject(key).getString("5. volume")));
+                stock.setOpen(stockData.getJSONObject(key).getString("1. open"));
+                stock.setHigh(stockData.getJSONObject(key).getString("2. high"));
+                stock.setLow(stockData.getJSONObject(key).getString("3. low"));
+                stock.setClose(stockData.getJSONObject(key).getString("4. close"));
+                stock.setVolume(stockData.getJSONObject(key).getString("5. volume"));
                 stockList.add(stock);
             }
             return stockList;

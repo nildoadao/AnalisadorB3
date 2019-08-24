@@ -72,13 +72,36 @@ public class SearchItemAdapter extends BaseAdapter {
         if (view == null)
             view = inflater.inflate(R.layout.search_item_result, viewGroup, false);
 
-        TextView symbol = view.findViewById(R.id.search_item_symbol);
-        TextView company = view.findViewById(R.id.search_item_company);
-        ImageButton icon = view.findViewById(R.id.search_item_icon);
-        symbol.setText(stocks.get(i).getSymbol());
-        company.setText(stocks.get(i).getCompany());
+        defineBasicInformation(view, stocks.get(i));
+        setIconBackground(view, i);
+        setListeners(view, i);
+        return view;
+    }
 
-        final boolean favouriteStock = settings.getFavouriteStocks().contains(stocks.get(i).getSymbol());
+    private void setListeners(View view, final int position){
+        ImageButton icon = view.findViewById(R.id.search_item_icon);
+        final boolean favouriteStock = settings.getFavouriteStocks().contains(stocks.get(position).getSymbol());
+
+        icon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(buttonClickListener != null && !favouriteStock){
+                    buttonClickListener.onButtonClick(view.getContext(), position);
+                }
+            }
+        });
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(clickListener != null)
+                    clickListener.onItemClick(view.getContext(), position);
+            }
+        });
+    }
+
+    private void setIconBackground(View view, int position){
+        ImageButton icon = view.findViewById(R.id.search_item_icon);
+        final boolean favouriteStock = settings.getFavouriteStocks().contains(stocks.get(position).getSymbol());
 
         if(favouriteStock){
             icon.setBackgroundResource(R.drawable.star_icon);
@@ -86,24 +109,12 @@ public class SearchItemAdapter extends BaseAdapter {
         else{
             icon.setBackgroundResource(R.drawable.plus_icon);
         }
+    }
 
-        icon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(buttonClickListener != null && !favouriteStock){
-                    buttonClickListener.onButtonClick(view.getContext(), i);
-                }
-            }
-        });
-
-        view.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(clickListener != null)
-                    clickListener.onItemClick(view.getContext(), i);
-            }
-        });
-
-        return view;
+    private void defineBasicInformation(View view, StockQuote stock){
+        TextView symbol = view.findViewById(R.id.search_item_symbol);
+        TextView company = view.findViewById(R.id.search_item_company);
+        symbol.setText(stock.getSymbol());
+        company.setText(stock.getCompany());
     }
 }

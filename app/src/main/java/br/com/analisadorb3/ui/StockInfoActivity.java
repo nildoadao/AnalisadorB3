@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -25,43 +24,55 @@ import br.com.analisadorb3.adaptors.StockInfoAdapter;
 
 public class StockInfoActivity extends AppCompatActivity {
 
-    private StockFragment lastQuote;
-    private StockListFragment historyQuote;
-    private String errorMessage;
+    private StockFragment lastQuoteFragment;
+    private StockListFragment historyQuoteFragment;
     private StockInfoAdapter stockInfoAdapter;
-    private ErrorAdapter errorAdapter;
-    private SwipeRefreshLayout refresh;
     private String symbol;
     private String company;
+
+    private String getSymbol(){
+        return symbol;
+    }
+
+    private void setSymbol(String symbol){
+        this.symbol = symbol;
+    }
+
+    private String getCompany(){
+        return company;
+    }
+
+    private void setCompany(String company){
+        this.company = company;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stock_info);
         getExtras();
-        refresh = findViewById(R.id.stock_info_swipe_refresh);
-        FragmentManager manager = getSupportFragmentManager();
-        lastQuote = (StockFragment) manager.findFragmentByTag("lastQuote");
-        historyQuote = (StockListFragment) manager.findFragmentByTag("historyQuote");
+        initStockQuoteFragments();
+        initCompanyTextView();
+        initStockInfoAdapter();
+        initBackButton();
+        initRefreshLayout();
 
-        if(lastQuote == null){
-            lastQuote = new StockFragment();
-            historyQuote = new StockListFragment();
-            lastQuote.setData(new StockQuote());
-            historyQuote.setData(new ArrayList<StockQuote>());
-            manager.beginTransaction().add(lastQuote, "lastQuote").commit();
-            manager.beginTransaction().add(historyQuote, "historyQuote").commit();
-            refresh.setRefreshing(true);
-            new LoadStockQuote().execute(symbol);
-            new LoadStockHistory().execute(symbol);
-        }
+    }
 
-        TextView companyName = findViewById(R.id.stock_info_company);
-        companyName.setText(company);
-        stockInfoAdapter = new StockInfoAdapter(this, lastQuote.getData(), historyQuote.getData());
-        ListView stockList = findViewById(R.id.stock_info_list);
-        stockList.setAdapter(stockInfoAdapter);
+    private void initRefreshLayout(){
+        final SwipeRefreshLayout refreshLayout = findViewById(R.id.stock_info_swipe_refresh);
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if(!refreshLayout.isRefreshing())
+                    refreshLayout.setRefreshing(true);
 
+                new LoadStockData().execute(getSymbol());
+            }
+        });
+    }
+
+    private void initBackButton(){
         ImageButton backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -69,108 +80,112 @@ public class StockInfoActivity extends AppCompatActivity {
                 onBackPressed();
             }
         });
-        refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                if(!refresh.isRefreshing())
-                    refresh.setRefreshing(true);
+    }
 
-                new LoadStockHistory().execute(symbol);
-            }
-        });
+    private void initStockInfoAdapter(){
+        stockInfoAdapter = new StockInfoAdapter(this, lastQuoteFragment.getData(), historyQuoteFragment.getData());
+        ListView stockList = findViewById(R.id.stock_info_list);
+        stockList.setAdapter(stockInfoAdapter);
+    }
+
+    private void initCompanyTextView(){
+        TextView companyName = findViewById(R.id.stock_info_company);
+        companyName.setText(getCompany());
+    }
+
+    private void initStockQuoteFragments(){
+        FragmentManager manager = getSupportFragmentManager();
+        lastQuoteFragment = (StockFragment) manager.findFragmentByTag("lastQuote");
+        historyQuoteFragment = (StockListFragment) manager.findFragmentByTag("historyQuote");
+
+        if(lastQuoteFragment == null || historyQuoteFragment == null){
+            lastQuoteFragment = new StockFragment();
+            lastQuoteFragment.setData(new StockQuote());
+            historyQuoteFragment = new StockListFragment();
+            historyQuoteFragment.setData(new ArrayList<StockQuote>());
+            manager.beginTransaction().add(lastQuoteFragment, "lastQuote").commit();
+            manager.beginTransaction().add(historyQuoteFragment, "historyQuote").commit();
+            SwipeRefreshLayout refreshLayout = findViewById(R.id.stock_info_swipe_refresh);
+            refreshLayout.setRefreshing(true);
+            new LoadStockData().execute(getSymbol());
+        }
     }
 
     private void getExtras(){
         Intent intent = getIntent();
-        symbol = intent.getStringExtra(MainActivity.SYMBOL_MESSAGE);
-        company = intent.getStringExtra(MainActivity.COMPANY_MESSAGE);
+        setSymbol(intent.getStringExtra(MainActivity.SYMBOL_MESSAGE));
+        setCompany(intent.getStringExtra(MainActivity.COMPANY_MESSAGE));
 
         if(symbol == null){ // Coming from search
-            symbol = intent.getStringExtra(SearchActivity.SYMBOL_MESSAGE);
-            company = intent.getStringExtra(SearchActivity.COMPANY_MESSAGE);
+            setSymbol(intent.getStringExtra(SearchActivity.SYMBOL_MESSAGE));
+            setCompany(intent.getStringExtra(SearchActivity.COMPANY_MESSAGE));
         }
     }
 
     public void onDestroy(){
         super.onDestroy();
-        historyQuote.setData(historyQuote.getData());
-        lastQuote.setData(lastQuote.getData());
+        historyQuoteFragment.setData(historyQuoteFragment.getData());
+        lastQuoteFragment.setData(lastQuoteFragment.getData());
     }
 
-    private void onLoadStockHistoryCompleted(List<StockQuote> list){
-        if(list != null){
-            historyQuote.getData().clear();
-            for(StockQuote quote : list)
-                historyQuote.getData().add(quote);
-
-            stockInfoAdapter = new StockInfoAdapter(this, lastQuote.getData(), historyQuote.getData());
-            ListView stockList = findViewById(R.id.stock_info_list);
-            stockList.setAdapter(stockInfoAdapter);
-            refresh.setRefreshing(false);
-        }
-        else {
-            errorAdapter = new ErrorAdapter(this, errorMessage);
-            ListView stockList = findViewById(R.id.stock_info_list);
-            stockList.setAdapter(errorAdapter);
-            refresh.setRefreshing(false);
-        }
+    private void setErrorAdapter(String message){
+        ErrorAdapter errorAdapter = new ErrorAdapter(this, message);
+        SwipeRefreshLayout refreshLayout = findViewById(R.id.stock_info_swipe_refresh);
+        ListView stockList = findViewById(R.id.stock_info_list);
+        stockList.setAdapter(errorAdapter);
+        refreshLayout.setRefreshing(false);
     }
 
-    private void onLoadStockQuoteCompleted(StockQuote result){
-        if(result != null){
-            lastQuote.setData(result);
-            stockInfoAdapter = new StockInfoAdapter(this, lastQuote.getData(), historyQuote.getData());
-            ListView stockList = findViewById(R.id.stock_info_list);
-            stockList.setAdapter(stockInfoAdapter);
-        }
-        else {
-            errorAdapter = new ErrorAdapter(this, errorMessage);
-            ListView stockList = findViewById(R.id.stock_info_list);
-            stockList.setAdapter(errorAdapter);
-            refresh.setRefreshing(false);
-        }
+    private void onLoadStockDataCompleted(StockQuote stock, List<StockQuote> list){
+
+        SwipeRefreshLayout refreshLayout = findViewById(R.id.stock_info_swipe_refresh);
+        historyQuoteFragment.getData().clear();
+
+        for(StockQuote quote : list)
+            historyQuoteFragment.getData().add(quote);
+
+        lastQuoteFragment.setData(stock);
+        stockInfoAdapter = new StockInfoAdapter(this, lastQuoteFragment.getData(), historyQuoteFragment.getData());
+        ListView stockList = findViewById(R.id.stock_info_list);
+        stockList.setAdapter(stockInfoAdapter);
+        refreshLayout.setRefreshing(false);
     }
 
-    public class LoadStockHistory extends AsyncTask<String, Void, List<StockQuote>>{
+    public class LoadStockData extends AsyncTask<String, Void, Void>{
+
+        private StockQuote stock;
+        private List<StockQuote> stockHistory;
+        private String errorMessage;
+
+        private String getErrorMessage(){
+            return errorMessage;
+        }
+
+        private void setErrorMessage(String message){
+            errorMessage = message;
+        }
         @Override
-        protected List<StockQuote> doInBackground(String... params) {
-            List<StockQuote> list;
+        protected Void doInBackground(String... params) {
             try{
                 ApiConnector api = new WorldTradingConnector(getBaseContext());
-                list = api.getDailyTimeSeries(params[0]);
-            }
-            catch (Exception ex){
-                errorMessage = ex.getMessage();
-                return null;
-            }
-            return list;
-        }
-
-        @Override
-        protected void onPostExecute(List<StockQuote> result) {
-            super.onPostExecute(result);
-            onLoadStockHistoryCompleted(result);
-        }
-    }
-
-    public class LoadStockQuote extends AsyncTask<String, Void, StockQuote>{
-
-        @Override
-        protected StockQuote doInBackground(String... params) {
-            try{
-                ApiConnector api = new WorldTradingConnector(getBaseContext());
-                return api.getLastQuote(params[0]);
+                stock = api.getLastQuote(params[0]);
+                stockHistory = api.getDailyTimeSeries(params[0]);
             }
             catch (ApiException e){
-                errorMessage = e.getMessage();
-                return null;
+                setErrorMessage(e.getMessage());
+                stock = null;
+                stockHistory = null;
             }
+            return null;
         }
 
         @Override
-        protected void onPostExecute(StockQuote stockQuote) {
-            super.onPostExecute(stockQuote);
-            onLoadStockQuoteCompleted(stockQuote);
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            if(stockHistory == null || stock == null)
+                setErrorAdapter(getErrorMessage());
+            else
+                onLoadStockDataCompleted(stock, stockHistory);
         }
     }
 }
