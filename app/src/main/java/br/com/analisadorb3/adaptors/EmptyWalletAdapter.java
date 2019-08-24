@@ -5,18 +5,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.TextView;
 
 import br.com.analisadorb3.R;
 
-public class ErrorAdapter extends BaseAdapter {
+public class EmptyWalletAdapter extends BaseAdapter {
 
-    private String message;
     private static LayoutInflater inflater = null;
 
-    public ErrorAdapter(Context context, String message){
-        this.message = message;
-        inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    public EmptyWalletAdapter(Context context){
+        inflater = (LayoutInflater) context.getSystemService(context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override
@@ -26,7 +23,7 @@ public class ErrorAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int i) {
-        return message;
+        return null;
     }
 
     @Override
@@ -37,10 +34,7 @@ public class ErrorAdapter extends BaseAdapter {
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
         if (view == null)
-            view = inflater.inflate(R.layout.error_item, viewGroup, false);
-
-        TextView errorText = view.findViewById(R.id.error_item_message);
-        errorText.setText(message);
+            view = inflater.inflate(R.layout.empty_wallet,viewGroup, false);
         return view;
     }
 }

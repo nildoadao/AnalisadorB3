@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
@@ -58,11 +59,12 @@ public class StockAdapter extends BaseAdapter {
     public View getView(final int i, View view, ViewGroup viewGroup) {
 
         if (view == null)
-            view = inflater.inflate(R.layout.stock_item, null);
+            view = inflater.inflate(R.layout.stock_item, viewGroup, false);
 
         TextView stockName = view.findViewById(R.id.stock_name);
         TextView stockPrice = view.findViewById(R.id.stock_info_price);
         TextView stockChange = view.findViewById(R.id.stock_change_percent);
+        ImageView arrow = view.findViewById(R.id.stock_arrow_status);
 
         stockName.setText(stocks.get(i).getSymbol());
         stockPrice.setText(String.format("%.2f %s", stocks.get(i).getPrice(),
@@ -90,9 +92,11 @@ public class StockAdapter extends BaseAdapter {
 
         if(stocks.get(i).getChange() >= 0) {
             stockChange.setTextColor(Color.argb(255, 0, 127, 0));
+            arrow.setImageResource(R.drawable.arrow_up);
         }
         else{
             stockChange.setTextColor(Color.RED);
+            arrow.setImageResource(R.drawable.arrow_down);
         }
         return view;
     }

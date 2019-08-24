@@ -12,10 +12,12 @@
     <string name="world_trading_day_limit_exceeded">Você excedeu o limite diario de requisições</string>
     <string name="search_hint">Pesquisar...</string>
     <string name="saved">Salvo</string>
-    <string name="stocks_saved_limit">Você já atingiu o limite de Ações a serem salvas</string>
+    <string name="stocks_saved_limit">Você já atingiu o limite de itens salvos</string>
     <string name="stop_follow">Parar de Seguir</string>
     <string name="yes">Sim</string>
     <string name="no">Não</string>
     <string name="removed">Removido</string>
     <string name="remove_fail">Falha ao remover</string>
+    <string name="wallet">Carteira</string>
+    <string name="empty_wallet">Sua carteira está vazia</string>
 </resources>

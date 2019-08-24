@@ -12,6 +12,7 @@ import android.widget.ListView;
 import java.util.ArrayList;
 import java.util.List;
 import br.com.analisadorb3.R;
+import br.com.analisadorb3.adaptors.EmptyWalletAdapter;
 import br.com.analisadorb3.api.ApiConnector;
 import br.com.analisadorb3.api.WorldTradingConnector;
 import br.com.analisadorb3.models.StockListFragment;
@@ -37,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         final FragmentManager manager = getSupportFragmentManager();
         stocks = (StockListFragment) manager.findFragmentByTag("stockListFragment");
 
-        if(stocks == null || getFavouriteSymbols().size() != stocks.getData().size()){
+        if(stocks == null){
             stocks = new StockListFragment();
             stocks.setData(new ArrayList<StockQuote>());
             manager.beginTransaction().add(stocks, "stockListFragment").commit();
@@ -112,6 +113,13 @@ public class MainActivity extends AppCompatActivity {
                 stocks.getData().remove(stockToRemove);
                 adapter.notifyDataSetChanged();
             }
+
+            if(stocks.getData().size() == 0){
+                ListView listView = findViewById(R.id.stock_list);
+                EmptyWalletAdapter emptyWalletAdapter = new EmptyWalletAdapter(this);
+                listView.setAdapter(emptyWalletAdapter);
+                return;
+            }
         }
     }
 
@@ -126,15 +134,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void onRefreshComplete(List<StockQuote> list){
+        ListView listView = findViewById(R.id.stock_list);
+
+        if(getFavouriteSymbols().size() == 0){
+            EmptyWalletAdapter emptyWalletAdapter = new EmptyWalletAdapter(this);
+            listView.setAdapter(emptyWalletAdapter);
+            refresh.setRefreshing(false);
+            return;
+        }
 
         if(list == null){
             errorAdapter = new ErrorAdapter(this, getString(R.string.no_internet));
-            ListView listView = findViewById(R.id.stock_list);
             listView.setAdapter(errorAdapter);
             refresh.setRefreshing(false);
         }
         else {
-            ListView listView = findViewById(R.id.stock_list);
             listView.setAdapter(adapter);
             stocks.getData().clear();
 

@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import java.util.ArrayList;
@@ -61,7 +62,7 @@ public class StockInfoActivity extends AppCompatActivity {
         ListView stockList = findViewById(R.id.stock_info_list);
         stockList.setAdapter(stockInfoAdapter);
 
-        Button backButton = findViewById(R.id.back_button);
+        ImageButton backButton = findViewById(R.id.back_button);
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

@@ -45,7 +45,7 @@ public class StockInfoAdapter extends BaseAdapter {
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
         if (view == null)
-            view = inflater.inflate(R.layout.stock_info_item, null);
+            view = inflater.inflate(R.layout.stock_info_item, viewGroup, false);
 
         TextView stockSymbol = view.findViewById(R.id.stock_info_symbol);
         TextView stockPrice = view.findViewById(R.id.stock_info_price);

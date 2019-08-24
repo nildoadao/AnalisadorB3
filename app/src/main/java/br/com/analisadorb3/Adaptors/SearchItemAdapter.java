@@ -70,7 +70,7 @@ public class SearchItemAdapter extends BaseAdapter {
     @Override
     public View getView(final int i, View view, ViewGroup viewGroup) {
         if (view == null)
-            view = inflater.inflate(R.layout.search_item_result, null);
+            view = inflater.inflate(R.layout.search_item_result, viewGroup, false);
 
         TextView symbol = view.findViewById(R.id.search_item_symbol);
         TextView company = view.findViewById(R.id.search_item_company);
