@@ -15,7 +15,7 @@ import br.com.analisadorb3.R;
 import br.com.analisadorb3.adaptors.EmptyWalletAdapter;
 import br.com.analisadorb3.api.ApiConnector;
 import br.com.analisadorb3.api.WorldTradingConnector;
-import br.com.analisadorb3.models.StockListFragment;
+import br.com.analisadorb3.fragments.StockListFragment;
 import br.com.analisadorb3.models.StockQuote;
 import br.com.analisadorb3.adaptors.ErrorAdapter;
 import br.com.analisadorb3.adaptors.StockAdapter;

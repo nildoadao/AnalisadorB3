@@ -6,9 +6,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
-import java.util.List;
 
+import androidx.fragment.app.FragmentManager;
+import androidx.viewpager.widget.ViewPager;
+
+import com.google.android.material.tabs.TabLayout;
+
+import java.util.List;
 import br.com.analisadorb3.R;
 import br.com.analisadorb3.logic.StockCalculator;
 import br.com.analisadorb3.models.StockQuote;
@@ -17,15 +23,27 @@ public class StockInfoAdapter extends BaseAdapter {
     Context context;
     StockQuote stock;
     List<StockQuote> list;
+    FragmentManager fragmentManager;
+    List<StockQuote> dailyData;
+    List<StockQuote> monthData;
 
     private static LayoutInflater inflater = null;
 
-    public StockInfoAdapter(Context context, StockQuote stock, List<StockQuote> list){
+    public StockInfoAdapter(Context context, StockQuote stock, List<StockQuote> list, FragmentManager fragmentManager){
         this.context = context;
         this.stock = stock;
         this.list = list;
+        this.fragmentManager = fragmentManager;
         inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    }
+
+    public void setDailyData(List<StockQuote> data){
+        this.dailyData = data;
+    }
+
+    public void setMonthData(List<StockQuote> data){
+        this.monthData = data;
     }
 
     @Override
@@ -47,7 +65,13 @@ public class StockInfoAdapter extends BaseAdapter {
     public View getView(int i, View view, ViewGroup viewGroup) {
         if (view == null)
             view = inflater.inflate(R.layout.stock_info_item, viewGroup, false);
-
+        ViewPager pager = view.findViewById(R.id.stock_info_view_pager);
+        StockChartAdapter adapter = new StockChartAdapter(context, fragmentManager);
+        adapter.setDailyData(dailyData);
+        adapter.setMonthData(monthData);
+        pager.setAdapter(adapter);
+        TabLayout chartsTab =  view.findViewById(R.id.stock_info_charts_tab);
+        chartsTab.setupWithViewPager(pager);
         defineBasicInformation(view);
         defineDayChangeText(view);
         defineVolumeText(view);

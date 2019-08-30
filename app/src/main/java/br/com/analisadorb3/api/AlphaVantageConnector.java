@@ -45,6 +45,17 @@ public class AlphaVantageConnector implements ApiConnector {
         }
     }
 
+    private URL buildIntradayQuoteUrl(String symbol){
+        String urlString = String.format("https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=%s&interval=1min&outputsize=full&apikey=%s",
+                symbol, KEY);
+        try{
+            return new URL(urlString);
+        }
+        catch (Exception ex){
+            return  null;
+        }
+    }
+
     private URL buildDailySeriesUrl(String symbol){
         String urlString = String.format("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=%s&apikey=%s",
                 symbol, KEY);
@@ -129,7 +140,65 @@ public class AlphaVantageConnector implements ApiConnector {
 
     @Override
     public List<StockQuote> getIntradayTimeSeries(String symbol) throws ApiException {
-        return null;
+        URL url = buildIntradayQuoteUrl(symbol);
+
+        if(url == null)
+            throw new ApiException("Bad Url");
+
+        HttpURLConnection connection = buildUrlConnection(url);
+
+        if(connection == null)
+            throw new ApiException("Bad Url");
+
+        try {
+
+            int responseCode = connection.getResponseCode();
+
+            if (responseCode != HttpURLConnection.HTTP_OK)
+                throw new ApiException("Fail to get Stock data, code "
+                        + responseCode);
+
+            String inputLine;
+            BufferedReader input = new BufferedReader(
+                    new InputStreamReader(connection.getInputStream()));
+
+            StringBuffer response = new StringBuffer();
+            while ((inputLine = input.readLine()) != null) {
+                response.append(inputLine);
+            }
+
+            JSONObject json = new JSONObject(response.toString());
+            JSONObject stockData = json.getJSONObject("Time Series (1min)");
+            Iterator<String> iterator = stockData.keys();
+            List<StockQuote> stockList = new ArrayList<>();
+
+            while(iterator.hasNext()) {
+                StockQuote stock = new StockQuote();
+                String key = iterator.next();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                stock.setDate(LocalDate.parse(key, formatter));
+                stock.setOpen(stockData.getJSONObject(key).getString("1. open"));
+                stock.setHigh(stockData.getJSONObject(key).getString("2. high"));
+                stock.setLow(stockData.getJSONObject(key).getString("3. low"));
+                stock.setClose(stockData.getJSONObject(key).getString("4. close"));
+                stock.setVolume(stockData.getJSONObject(key).getString("5. volume"));
+                stockList.add(stock);
+            }
+            return stockList;
+        }
+        catch (IOException e){
+            throw new ApiException(context.getString(R.string.no_internet));
+        }
+        catch (JSONException e){
+            throw new ApiException(context.getString(R.string.alpha_vantage_request_per_minute_exceeded));
+        }
+        catch(Exception e){
+            throw new ApiException("Fail to communicate with AlphaVantage, "
+                + e.getMessage());
+        }
+        finally {
+            connection.disconnect();
+        }
     }
 
     @Override
