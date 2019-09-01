@@ -12,6 +12,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Description;
 
 import java.util.List;
 
@@ -45,6 +46,10 @@ public class MonthChartFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.stock_chart, container, false);
         LineChart chart = view.findViewById(R.id.chart);
+        Description description = new Description();
+        description.setText("");
+        chart.setDescription(description);
+        chart.setNoDataText("Nenhum dado disponível");
         chart.setData(ChartUtil.getMonthChart(chart, monthData));
         chart.animateX(2500);
         chart.invalidate();

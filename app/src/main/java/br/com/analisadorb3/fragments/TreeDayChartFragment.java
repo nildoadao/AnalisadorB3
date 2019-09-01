@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Description;
 
 import java.util.List;
 
@@ -23,14 +24,14 @@ import br.com.analisadorb3.util.ChartUtil;
  */
 public class TreeDayChartFragment extends Fragment {
 
-    private List<StockQuote> intraDayData;
+    private List<StockQuote> intradayData;
 
     public TreeDayChartFragment() {
         // Required empty public constructor
     }
 
     private void setData(List<StockQuote> data){
-        intraDayData = data;
+        intradayData = data;
     }
 
     public static TreeDayChartFragment newInstance(List<StockQuote> data){
@@ -44,7 +45,11 @@ public class TreeDayChartFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.stock_chart, container, false);
         LineChart chart = view.findViewById(R.id.chart);
-        chart.setData(ChartUtil.getTreeDayChart(chart, intraDayData));
+        Description description = new Description();
+        description.setText("");
+        chart.setDescription(description);
+        chart.setNoDataText("Nenhum dado disponível");
+        chart.setData(ChartUtil.getTreeDayChart(chart, intradayData));
         chart.animateX(2500);
         chart.invalidate();
         return view;

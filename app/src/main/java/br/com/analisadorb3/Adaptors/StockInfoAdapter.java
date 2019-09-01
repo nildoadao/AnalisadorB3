@@ -6,7 +6,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import androidx.fragment.app.FragmentManager;
@@ -21,29 +20,30 @@ import br.com.analisadorb3.models.StockQuote;
 
 public class StockInfoAdapter extends BaseAdapter {
     Context context;
-    StockQuote stock;
-    List<StockQuote> list;
+    StockQuote lastQuote;
     FragmentManager fragmentManager;
+    List<StockQuote> intraDayData;
     List<StockQuote> dailyData;
-    List<StockQuote> monthData;
 
     private static LayoutInflater inflater = null;
 
-    public StockInfoAdapter(Context context, StockQuote stock, List<StockQuote> list, FragmentManager fragmentManager){
+    public StockInfoAdapter(Context context, FragmentManager fragmentManager){
         this.context = context;
-        this.stock = stock;
-        this.list = list;
         this.fragmentManager = fragmentManager;
         inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
-    public void setDailyData(List<StockQuote> data){
-        this.dailyData = data;
+    public void setLastQuote(StockQuote lastQuote){
+        this.lastQuote = lastQuote;
     }
 
-    public void setMonthData(List<StockQuote> data){
-        this.monthData = data;
+    public void setIntraDayData(List<StockQuote> data){
+        this.intraDayData = data;
+    }
+
+    public void setDailyData(List<StockQuote> data){
+        this.dailyData = data;
     }
 
     @Override
@@ -53,7 +53,7 @@ public class StockInfoAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int i) {
-        return stock;
+        return lastQuote;
     }
 
     @Override
@@ -67,8 +67,8 @@ public class StockInfoAdapter extends BaseAdapter {
             view = inflater.inflate(R.layout.stock_info_item, viewGroup, false);
         ViewPager pager = view.findViewById(R.id.stock_info_view_pager);
         StockChartAdapter adapter = new StockChartAdapter(context, fragmentManager);
+        adapter.setIntraDayData(intraDayData);
         adapter.setDailyData(dailyData);
-        adapter.setMonthData(monthData);
         pager.setAdapter(adapter);
         TabLayout chartsTab =  view.findViewById(R.id.stock_info_charts_tab);
         chartsTab.setupWithViewPager(pager);
@@ -86,19 +86,19 @@ public class StockInfoAdapter extends BaseAdapter {
         TextView stockOpen = view.findViewById(R.id.stock_info_open);
         TextView stockPreviousClose = view.findViewById(R.id.stock_info_previous_close);
 
-        stockSymbol.setText(stock.getSymbol());
-        stockPrice.setText(String.format("%s %s", stock.getPrice(), stock.getCurrency()));
-        stockOpen.setText(String.format("%s: %s", context.getString(R.string.open), stock.getOpen()));
+        stockSymbol.setText(lastQuote.getSymbol());
+        stockPrice.setText(String.format("%s %s", lastQuote.getPrice(), lastQuote.getCurrency()));
+        stockOpen.setText(String.format("%s: %s", context.getString(R.string.open), lastQuote.getOpen()));
         stockPreviousClose.setText(String.format("%s: %s", context.getString(R.string.previous_close),
-                stock.getPreviousClose()));
+                lastQuote.getPreviousClose()));
     }
 
     private void defineDayChangeText(View view){
         TextView stockChange = view.findViewById(R.id.stock_info_change);
-        stockChange.setText(String.format("%s (%s", stock.getChange(), stock.getChangePercent()) + "%)");
+        stockChange.setText(String.format("%s (%s", lastQuote.getChange(), lastQuote.getChangePercent()) + "%)");
         Double dayChange;
         try{
-            dayChange = Double.parseDouble(stock.getChange());
+            dayChange = Double.parseDouble(lastQuote.getChange());
         }
         catch (Exception e){
             dayChange = null;
@@ -116,7 +116,7 @@ public class StockInfoAdapter extends BaseAdapter {
     private void defineAverageChangeText(View view){
         TextView stockAverageRange3 = view.findViewById(R.id.stock_info_average_range_3);
         try{
-            double averageRange = StockCalculator.getAverageVariation(list, 3);
+            double averageRange = StockCalculator.getAverageVariation(dailyData, 3);
             stockAverageRange3.setText(String.format("%s: %.2f", context.getString(R.string.average_change_3), averageRange));
         }
         catch (Exception e){
@@ -129,7 +129,7 @@ public class StockInfoAdapter extends BaseAdapter {
 
         Double volume;
         try{
-            volume = Double.parseDouble(stock.getVolume());
+            volume = Double.parseDouble(lastQuote.getVolume());
         }
         catch (Exception e){
             volume = null;
@@ -150,8 +150,8 @@ public class StockInfoAdapter extends BaseAdapter {
         Double dayLow;
 
         try{
-            dayHigh = Double.parseDouble(stock.getHigh());
-            dayLow = Double.parseDouble(stock.getLow());
+            dayHigh = Double.parseDouble(lastQuote.getHigh());
+            dayLow = Double.parseDouble(lastQuote.getLow());
         }
         catch (Exception e){
             dayHigh = null;
@@ -163,7 +163,7 @@ public class StockInfoAdapter extends BaseAdapter {
         }
         else {
             stockDayRange.setText(String.format("%s: %s - %s (%.2f)", context.getString(R.string.day_change),
-                    stock.getLow(), stock.getHigh(), (dayHigh - dayLow)));
+                    lastQuote.getLow(), lastQuote.getHigh(), (dayHigh - dayLow)));
         }
     }
 }

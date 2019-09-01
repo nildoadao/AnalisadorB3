@@ -1,4 +1,4 @@
-package br.com.analisadorb3.ui;
+package br.com.analisadorb3.view;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
@@ -69,6 +69,9 @@ public class SearchActivity extends AppCompatActivity {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
                 if(keyEvent.getAction() == KeyEvent.ACTION_DOWN && i == KeyEvent.KEYCODE_ENTER){
+                    ListView resultList = findViewById(R.id.search_result_list);
+                    searchItemAdapter.getData().clear();
+                    resultList.setAdapter(searchItemAdapter);
                     stocksFragment.getData().clear();
                     searchItemAdapter.notifyDataSetChanged();
                     new SearchTask().execute(search.getText().toString());

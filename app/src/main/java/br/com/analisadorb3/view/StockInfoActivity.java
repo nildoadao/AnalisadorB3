@@ -1,9 +1,8 @@
-package br.com.analisadorb3.ui;
+package br.com.analisadorb3.view;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.viewpager.widget.ViewPager;
 
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -13,12 +12,9 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.google.android.material.tabs.TabLayout;
-
 import java.util.ArrayList;
 import java.util.List;
 import br.com.analisadorb3.R;
-import br.com.analisadorb3.adaptors.StockChartAdapter;
 import br.com.analisadorb3.api.AlphaVantageConnector;
 import br.com.analisadorb3.api.ApiConnector;
 import br.com.analisadorb3.api.ApiException;
@@ -32,9 +28,8 @@ import br.com.analisadorb3.adaptors.StockInfoAdapter;
 public class StockInfoActivity extends AppCompatActivity {
 
     private StockFragment lastQuoteFragment;
-    private StockListFragment historyQuoteFragment;
-    private StockListFragment intradayQuoteFragment;
-    private StockListFragment monthQuoteFragment;
+    private StockListFragment intraDayDataFragment;
+    private StockListFragment dailyDataFragment;
     private StockInfoAdapter stockInfoAdapter;
     private String symbol;
     private String company;
@@ -91,9 +86,10 @@ public class StockInfoActivity extends AppCompatActivity {
     }
 
     private void initStockInfoAdapter(){
-        stockInfoAdapter = new StockInfoAdapter(this, lastQuoteFragment.getData(), historyQuoteFragment.getData(), getSupportFragmentManager());
-        stockInfoAdapter.setDailyData(intradayQuoteFragment.getData());
-        stockInfoAdapter.setMonthData(monthQuoteFragment.getData());
+        stockInfoAdapter = new StockInfoAdapter(this, getSupportFragmentManager());
+        stockInfoAdapter.setLastQuote(lastQuoteFragment.getData());
+        stockInfoAdapter.setIntraDayData(intraDayDataFragment.getData());
+        stockInfoAdapter.setDailyData(dailyDataFragment.getData());
         ListView stockList = findViewById(R.id.stock_info_list);
         stockList.setAdapter(stockInfoAdapter);
     }
@@ -106,23 +102,19 @@ public class StockInfoActivity extends AppCompatActivity {
     private void initStockQuoteFragments(){
         FragmentManager manager = getSupportFragmentManager();
         lastQuoteFragment = (StockFragment) manager.findFragmentByTag("lastQuote");
-        historyQuoteFragment = (StockListFragment) manager.findFragmentByTag("historyQuote");
-        intradayQuoteFragment = (StockListFragment) manager.findFragmentByTag("intradayQuote");
-        monthQuoteFragment = (StockListFragment) manager.findFragmentByTag("monthQuote");
+        intraDayDataFragment = (StockListFragment) manager.findFragmentByTag("intraDayData");
+        dailyDataFragment = (StockListFragment) manager.findFragmentByTag("dailyData");
 
-        if(lastQuoteFragment == null || historyQuoteFragment == null){
+        if(lastQuoteFragment == null || dailyDataFragment == null){
             lastQuoteFragment = new StockFragment();
             lastQuoteFragment.setData(new StockQuote());
-            historyQuoteFragment = new StockListFragment();
-            historyQuoteFragment.setData(new ArrayList<StockQuote>());
-            intradayQuoteFragment = new StockListFragment();
-            intradayQuoteFragment.setData(new ArrayList<StockQuote>());
-            monthQuoteFragment = new StockListFragment();
-            monthQuoteFragment.setData(new ArrayList<StockQuote>());
+            intraDayDataFragment = new StockListFragment();
+            intraDayDataFragment.setData(new ArrayList<StockQuote>());
+            dailyDataFragment = new StockListFragment();
+            dailyDataFragment.setData(new ArrayList<StockQuote>());
             manager.beginTransaction().add(lastQuoteFragment, "lastQuote").commit();
-            manager.beginTransaction().add(historyQuoteFragment, "historyQuote").commit();
-            manager.beginTransaction().add(intradayQuoteFragment, "intradayQuote").commit();
-            manager.beginTransaction().add(monthQuoteFragment, "monthQuote").commit();
+            manager.beginTransaction().add(intraDayDataFragment, "intraDayData").commit();
+            manager.beginTransaction().add(dailyDataFragment, "dailyData").commit();
             SwipeRefreshLayout refreshLayout = findViewById(R.id.stock_info_swipe_refresh);
             refreshLayout.setRefreshing(true);
             new LoadStockData().execute(getSymbol());
@@ -142,10 +134,9 @@ public class StockInfoActivity extends AppCompatActivity {
 
     public void onDestroy(){
         super.onDestroy();
-        historyQuoteFragment.setData(historyQuoteFragment.getData());
         lastQuoteFragment.setData(lastQuoteFragment.getData());
-        intradayQuoteFragment.setData(intradayQuoteFragment.getData());
-        monthQuoteFragment.setData(monthQuoteFragment.getData());
+        intraDayDataFragment.setData(intraDayDataFragment.getData());
+        dailyDataFragment.setData(dailyDataFragment.getData());
     }
 
     private void setErrorAdapter(String message){
@@ -156,28 +147,27 @@ public class StockInfoActivity extends AppCompatActivity {
         refreshLayout.setRefreshing(false);
     }
 
-    private void onLoadStockDataCompleted(StockQuote stock, List<StockQuote> list, List<StockQuote> intraday){
+    private void onLoadStockDataCompleted(StockQuote lastQuote, List<StockQuote> daily, List<StockQuote> intraDay){
 
         SwipeRefreshLayout refreshLayout = findViewById(R.id.stock_info_swipe_refresh);
-        historyQuoteFragment.getData().clear();
 
-        for(StockQuote quote : list)
-            historyQuoteFragment.getData().add(quote);
+        if(intraDay != null){
+            intraDayDataFragment.getData().clear();
 
-        intradayQuoteFragment.getData().clear();
+            for(StockQuote quote : intraDay)
+                intraDayDataFragment.getData().add(quote);
+        }
 
-        for(StockQuote quote : intraday)
-            intradayQuoteFragment.getData().add(quote);
+        dailyDataFragment.getData().clear();
 
-        monthQuoteFragment.getData().clear();
+        for(StockQuote quote : daily)
+            dailyDataFragment.getData().add(quote);
 
-        for(StockQuote quote : list)
-            monthQuoteFragment.getData().add(quote);
-
-        lastQuoteFragment.setData(stock);
-        stockInfoAdapter = new StockInfoAdapter(this, lastQuoteFragment.getData(), historyQuoteFragment.getData(), getSupportFragmentManager());
-        stockInfoAdapter.setDailyData(intraday);
-        stockInfoAdapter.setMonthData(list);
+        lastQuoteFragment.setData(lastQuote);
+        stockInfoAdapter = new StockInfoAdapter(this, getSupportFragmentManager());
+        stockInfoAdapter.setLastQuote(lastQuote);
+        stockInfoAdapter.setIntraDayData(intraDay);
+        stockInfoAdapter.setDailyData(daily);
         ListView stockList = findViewById(R.id.stock_info_list);
         stockList.setAdapter(stockInfoAdapter);
         refreshLayout.setRefreshing(false);
@@ -185,8 +175,8 @@ public class StockInfoActivity extends AppCompatActivity {
 
     public class LoadStockData extends AsyncTask<String, Void, Void>{
 
-        private StockQuote stock;
-        private List<StockQuote> stockHistory;
+        private StockQuote lastQuote;
+        private List<StockQuote> dailyData;
         private List<StockQuote> intraDayData;
         private String errorMessage;
 
@@ -201,15 +191,19 @@ public class StockInfoActivity extends AppCompatActivity {
         protected Void doInBackground(String... params) {
             try{
                 ApiConnector api = new WorldTradingConnector(getBaseContext());
-                stock = api.getLastQuote(params[0]);
-                stockHistory = api.getDailyTimeSeries(params[0]);
-                api = new AlphaVantageConnector(getBaseContext());
-                intraDayData = api.getIntradayTimeSeries(params[0]);
+                lastQuote = api.getLastQuote(params[0]);
+                dailyData = api.getDailyTimeSeries(params[0]);
             }
             catch (ApiException e){
                 setErrorMessage(e.getMessage());
-                stock = null;
-                stockHistory = null;
+                lastQuote = null;
+                dailyData = null;
+            }
+            try{
+                ApiConnector api = new AlphaVantageConnector(getBaseContext());
+                intraDayData = api.getIntradayTimeSeries(params[0]);
+            }
+            catch (ApiException e){
                 intraDayData = null;
             }
             return null;
@@ -218,10 +212,10 @@ public class StockInfoActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            if(stockHistory == null || stock == null)
+            if(dailyData == null || lastQuote == null)
                 setErrorAdapter(getErrorMessage());
             else
-                onLoadStockDataCompleted(stock, stockHistory, intraDayData);
+                onLoadStockDataCompleted(lastQuote, dailyData, intraDayData);
         }
     }
 }

@@ -1,4 +1,4 @@
-package br.com.analisadorb3.ui;
+package br.com.analisadorb3.view;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;

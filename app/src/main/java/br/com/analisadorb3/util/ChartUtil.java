@@ -1,16 +1,12 @@
 package br.com.analisadorb3.util;
 
 import android.graphics.Color;
-
-import com.github.mikephil.charting.charts.Chart;
 import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.formatter.IFillFormatter;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.formatter.ValueFormatter;
@@ -19,6 +15,7 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import br.com.analisadorb3.models.StockQuote;
@@ -28,15 +25,15 @@ public class ChartUtil {
     public static LineData getDayChart(final LineChart chart, List<StockQuote> data){
         if(data == null)
             return null;
-
+        Collections.sort(data);
         ArrayList<Entry> entries = new ArrayList<>();
         LocalDate currentDate = LocalDate.now();
 
-        for(int i = data.size() - 1 ; i >= 0; i--){
+        for(int i = 0; i < data.size(); i++){
             StockQuote quote = data.get(i);
             if(quote.getDate().isAfter(currentDate.minusDays(1))){
                 float price = Float.parseFloat(quote.getClose());
-                entries.add(new Entry(entries.size(), price));
+                entries.add(new Entry(i, price));
             }
         }
 
@@ -96,22 +93,22 @@ public class ChartUtil {
         // Controlling left side of y axis
         YAxis yAxisLeft = chart.getAxisLeft();
         yAxisLeft.setGranularity(1f);
-        LineData lineData = new LineData(dataSet);
-        return lineData;
+        return new LineData(dataSet);
     }
 
     public static LineData getTreeDayChart(final LineChart chart, final List<StockQuote> data){
         if(data == null)
             return null;
 
+        Collections.sort(data);
         final ArrayList<Entry> entries = new ArrayList<>();
         LocalDate currentDate = LocalDate.now();
 
-        for(int i = data.size() - 1 ; i >= 0; i--){
+        for(int i = 0; i < data.size(); i++){
             StockQuote quote = data.get(i);
             if(quote.getDate().isAfter(currentDate.minusDays(3))){
                 float price = Float.parseFloat(quote.getClose());
-                entries.add(new Entry(entries.size(), price));
+                entries.add(new Entry(i, price));
             }
         }
 
@@ -138,27 +135,27 @@ public class ChartUtil {
             @Override
             public String getFormattedValue(float value) {
                 if(value == 0)
-                    return "9h";
-                else if(value == 120)
-                    return "11h";
-                else if(value == 240)
-                    return "13h";
-                else if(value == 360)
-                    return "15h";
-                else if(value == 480)
-                    return "17h";
-                else if(value == 600)
                     return "10h";
-                else if(value == 720)
+                else if(value == 120)
                     return "12h";
-                else if(value == 840)
+                else if(value == 240)
                     return "14h";
-                else if(value == 960)
+                else if(value == 360)
+                    return "16h";
+                else if(value == 480)
+                    return "10h";
+                else if(value == 600)
+                    return "11h";
+                else if(value == 720)
+                    return "13h";
+                else if(value == 840)
                     return "15h";
+                else if(value == 960)
+                    return "16h";
                 else if(value == 1080)
-                    return "17h";
+                    return "10h";
                 else if(value == 1200)
-                    return "9h";
+                    return "12h";
                 else
                     return "";
             }
@@ -174,22 +171,22 @@ public class ChartUtil {
         // Controlling left side of y axis
         YAxis yAxisLeft = chart.getAxisLeft();
         yAxisLeft.setGranularity(1f);
-        LineData lineData = new LineData(dataSet);
-        return lineData;
+        return new LineData(dataSet);
     }
 
     public static LineData getSixMonthsChart(final LineChart chart, final List<StockQuote> data){
         if(data == null)
             return null;
 
+        Collections.sort(data);
         final ArrayList<Entry> entries = new ArrayList<>();
         LocalDate currentDate = LocalDate.now();
 
-        for(int i = data.size() - 1 ; i >= 0; i--){
+        for(int i = 0 ; i < data.size(); i++){
             StockQuote quote = data.get(i);
             if(quote.getDate().isAfter(currentDate.minusMonths(6))){
                 float price = Float.parseFloat(quote.getClose());
-                entries.add(new Entry(entries.size(), price));
+                entries.add(new Entry(i, price));
             }
         }
 
@@ -240,22 +237,22 @@ public class ChartUtil {
         // Controlling left side of y axis
         YAxis yAxisLeft = chart.getAxisLeft();
         yAxisLeft.setGranularity(1f);
-        LineData lineData = new LineData(dataSet);
-        return lineData;
+        return new LineData(dataSet);
     }
 
     public static LineData getMonthChart(final LineChart chart, final List<StockQuote> data){
         if(data == null)
             return null;
 
+        Collections.sort(data);
         final ArrayList<Entry> entries = new ArrayList<>();
         LocalDate currentDate = LocalDate.now();
 
-        for(int i = data.size() - 1 ; i >= 0; i--){
+        for(int i = 0 ; i < data.size(); i++){
             StockQuote quote = data.get(i);
             if(quote.getDate().isAfter(currentDate.minusMonths(1))){
                 float price = Float.parseFloat(quote.getClose());
-                entries.add(new Entry(entries.size(), price));
+                entries.add(new Entry(i, price));
             }
         }
 
@@ -306,7 +303,6 @@ public class ChartUtil {
         // Controlling left side of y axis
         YAxis yAxisLeft = chart.getAxisLeft();
         yAxisLeft.setGranularity(1f);
-        LineData lineData = new LineData(dataSet);
-        return lineData;
+        return new LineData(dataSet);
     }
 }

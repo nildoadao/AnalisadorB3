@@ -1,4 +1,4 @@
-package br.com.analisadorb3.ui;
+package br.com.analisadorb3.view;
 
 import android.app.Dialog;
 import android.content.DialogInterface;

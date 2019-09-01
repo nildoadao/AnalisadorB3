@@ -21,32 +21,32 @@ import br.com.analisadorb3.models.StockQuote;
 public class StockChartAdapter extends FragmentStatePagerAdapter {
 
     Context context;
+    List<StockQuote> intraDayData;
     List<StockQuote> dailyData;
-    List<StockQuote> monthData;
 
     public StockChartAdapter(Context context, FragmentManager fragmentManager){
         super(fragmentManager);
         this.context = context;
     }
 
-   public void setDailyData(List<StockQuote> data){
-        this.dailyData = data;
+   public void setIntraDayData(List<StockQuote> data){
+        this.intraDayData = data;
    }
 
-   public void setMonthData(List<StockQuote> data){
-        monthData = data;
+   public void setDailyData(List<StockQuote> data){
+        dailyData = data;
    }
 
     @Override
     public Fragment getItem(int position) {
         if(position == 0)
-            return DayChartFragment.newInstance(dailyData);
+            return DayChartFragment.newInstance(intraDayData);
         else if(position == 1)
-            return TreeDayChartFragment.newInstance(dailyData);
+            return TreeDayChartFragment.newInstance(intraDayData);
         else if(position == 2)
-            return MonthChartFragment.newInstance(monthData);
+            return MonthChartFragment.newInstance(dailyData);
         else
-            return SixMonthsChartFragment.newInstance(monthData);
+            return SixMonthsChartFragment.newInstance(dailyData);
     }
 
     @Override
