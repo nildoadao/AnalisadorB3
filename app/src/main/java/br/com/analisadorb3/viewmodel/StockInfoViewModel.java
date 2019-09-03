@@ -2,6 +2,6 @@ package br.com.analisadorb3.viewmodel;
 
 import androidx.lifecycle.ViewModel;
 
-public class MainViewModel extends ViewModel {
+public class StockInfoViewModel extends ViewModel {
     // TODO: Implement the ViewModel
 }

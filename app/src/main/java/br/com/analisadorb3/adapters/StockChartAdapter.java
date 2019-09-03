@@ -1,4 +1,4 @@
-package br.com.analisadorb3.adaptors;
+package br.com.analisadorb3.adapters;
 
 import android.content.Context;
 
@@ -6,8 +6,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
-
-import com.github.mikephil.charting.charts.LineChart;
 
 import java.util.List;
 

@@ -22,8 +22,8 @@ import br.com.analisadorb3.api.WorldTradingConnector;
 import br.com.analisadorb3.fragments.StockFragment;
 import br.com.analisadorb3.fragments.StockListFragment;
 import br.com.analisadorb3.models.StockQuote;
-import br.com.analisadorb3.adaptors.ErrorAdapter;
-import br.com.analisadorb3.adaptors.StockInfoAdapter;
+import br.com.analisadorb3.adapters.ErrorAdapter;
+import br.com.analisadorb3.adapters.StockInfoAdapter;
 
 public class StockInfoActivity extends AppCompatActivity {
 

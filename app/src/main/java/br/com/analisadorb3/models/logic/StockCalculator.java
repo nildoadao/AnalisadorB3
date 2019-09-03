@@ -1,9 +1,8 @@
-package br.com.analisadorb3.logic;
+package br.com.analisadorb3.models.logic;
 
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
-import java.util.UnknownFormatConversionException;
 
 import br.com.analisadorb3.models.StockQuote;
 

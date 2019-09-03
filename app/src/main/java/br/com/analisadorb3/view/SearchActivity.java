@@ -17,14 +17,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import br.com.analisadorb3.R;
-import br.com.analisadorb3.adaptors.EmptySearchAdapter;
-import br.com.analisadorb3.adaptors.ErrorAdapter;
+import br.com.analisadorb3.adapters.EmptySearchAdapter;
+import br.com.analisadorb3.adapters.ErrorAdapter;
 import br.com.analisadorb3.api.ApiConnector;
 import br.com.analisadorb3.api.ApiException;
 import br.com.analisadorb3.api.WorldTradingConnector;
 import br.com.analisadorb3.fragments.StockListFragment;
 import br.com.analisadorb3.models.StockQuote;
-import br.com.analisadorb3.adaptors.SearchItemAdapter;
+import br.com.analisadorb3.adapters.SearchItemAdapter;
 import br.com.analisadorb3.util.SettingsUtil;
 
 public class SearchActivity extends AppCompatActivity {

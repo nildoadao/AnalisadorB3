@@ -1,4 +1,4 @@
-package br.com.analisadorb3.adaptors;
+package br.com.analisadorb3.adapters;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -15,7 +15,7 @@ import com.google.android.material.tabs.TabLayout;
 
 import java.util.List;
 import br.com.analisadorb3.R;
-import br.com.analisadorb3.logic.StockCalculator;
+import br.com.analisadorb3.models.logic.StockCalculator;
 import br.com.analisadorb3.models.StockQuote;
 
 public class StockInfoAdapter extends BaseAdapter {

@@ -1,4 +1,4 @@
-package br.com.analisadorb3.adaptors;
+package br.com.analisadorb3.adapters;
 
 import android.content.Context;
 import android.graphics.Color;

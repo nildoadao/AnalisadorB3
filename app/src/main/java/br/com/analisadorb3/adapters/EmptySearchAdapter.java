@@ -1,4 +1,4 @@
-package br.com.analisadorb3.adaptors;
+package br.com.analisadorb3.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -8,11 +8,10 @@ import android.widget.BaseAdapter;
 
 import br.com.analisadorb3.R;
 
-public class EmptyWalletAdapter extends BaseAdapter {
-
+public class EmptySearchAdapter extends BaseAdapter {
     private static LayoutInflater inflater = null;
 
-    public EmptyWalletAdapter(Context context){
+    public EmptySearchAdapter(Context context){
         inflater = (LayoutInflater) context.getSystemService(context.LAYOUT_INFLATER_SERVICE);
     }
 
@@ -34,7 +33,7 @@ public class EmptyWalletAdapter extends BaseAdapter {
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
         if (view == null)
-            view = inflater.inflate(R.layout.empty_wallet,viewGroup, false);
+            view = inflater.inflate(R.layout.empty_search,viewGroup, false);
         return view;
     }
 }
