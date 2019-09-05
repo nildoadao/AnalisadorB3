@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 import br.com.analisadorb3.R;
+import br.com.analisadorb3.databinding.MainFragmentBinding;
 import br.com.analisadorb3.models.StockQuote;
 import br.com.analisadorb3.view.StockItemHolder;
 
@@ -43,8 +44,9 @@ public class StockItemAdapter extends RecyclerView.Adapter<StockItemHolder> {
     @NonNull
     @Override
     public StockItemHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new StockItemHolder(LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.stock_item, parent, false));
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        MainFragmentBinding binding = MainFragmentBinding.inflate(inflater, parent, false);
+        return new StockItemHolder(binding);
     }
 
     @Override

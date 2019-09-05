@@ -5,24 +5,26 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
+import androidx.databinding.library.baseAdapters.BR;
 import androidx.recyclerview.widget.RecyclerView;
 
 import br.com.analisadorb3.R;
+import br.com.analisadorb3.databinding.MainFragmentBinding;
+import br.com.analisadorb3.fragments.MainFragment;
+import br.com.analisadorb3.models.StockQuote;
+import br.com.analisadorb3.viewmodel.MainViewModel;
 
 public class StockItemHolder extends RecyclerView.ViewHolder {
 
-    public TextView stockSymbol;
-    public TextView stockPrice;
-    public TextView stockChange;
-    public ImageView changeArrow;
-    public CardView stockCard;
+    MainFragmentBinding binding;
 
-    public StockItemHolder(@NonNull View itemView) {
-        super(itemView);
-        stockSymbol = itemView.findViewById(R.id.stock_name);
-        stockPrice = itemView.findViewById(R.id.stock_info_price);
-        stockChange = itemView.findViewById(R.id.stock_change_percent);
-        changeArrow = itemView.findViewById(R.id.stock_arrow_status);
-        stockCard = itemView.findViewById(R.id.stock_card);
+    public StockItemHolder(MainFragmentBinding binding) {
+        super(binding.getRoot());
+        this.binding = binding;
+    }
+
+    public void bind(MainViewModel viewModel, int position){
+        binding.setVariable(br.com.analisadorb3.BR.viewmodel, viewModel);
+        binding.setVariable()
     }
 }

@@ -123,8 +123,8 @@ public class StockInfoActivity extends AppCompatActivity {
 
     private void getExtras(){
         Intent intent = getIntent();
-        setSymbol(intent.getStringExtra(MainActivity.SYMBOL_MESSAGE));
-        setCompany(intent.getStringExtra(MainActivity.COMPANY_MESSAGE));
+        //setSymbol(intent.getStringExtra(MainActivity.SYMBOL_MESSAGE));
+        //setCompany(intent.getStringExtra(MainActivity.COMPANY_MESSAGE));
 
         if(symbol == null){ // Coming from search
             setSymbol(intent.getStringExtra(SearchActivity.SYMBOL_MESSAGE));
