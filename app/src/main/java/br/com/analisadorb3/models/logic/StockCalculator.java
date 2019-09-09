@@ -4,20 +4,20 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 
-import br.com.analisadorb3.models.StockQuote;
+import br.com.analisadorb3.models.StockHistorycalData;
 
 public class StockCalculator {
 
-    public static double getAverageVariation(List<StockQuote> list, int months) throws IllegalArgumentException{
+    public static double getAverageVariation(List<StockHistorycalData> list, int months) throws IllegalArgumentException{
 
         double totalVariation = 0;
         int valuesCount = 0;
-        Collections.sort(list);
+        //Collections.sort(list);
         LocalDate currentDate = LocalDate.now();
 
         for(int i = list.size() - 1 ; i >= 0; i--) {
 
-            StockQuote quote = list.get(i);
+            StockHistorycalData quote = list.get(i);
             Double dayHigh;
             Double dayLow;
 
@@ -34,10 +34,10 @@ public class StockCalculator {
                 throw new IllegalArgumentException("Fail to get DayHigh, DayLow");
             }
 
-            if(list.get(i).getDate().isAfter(currentDate.minusMonths(months))) {
+            /*if(list.get(i).getDate().isAfter(currentDate.minusMonths(months))) {
                 totalVariation += dayHigh - dayLow;
                 valuesCount++;
-            }
+            }*/
             else {
                 break;
             }

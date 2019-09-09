@@ -18,23 +18,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import br.com.analisadorb3.models.StockQuote;
+import br.com.analisadorb3.models.StockHistorycalData;
 
 public class ChartUtil {
 
-    public static LineData getDayChart(final LineChart chart, List<StockQuote> data){
+    public static LineData getDayChart(final LineChart chart, List<StockHistorycalData> data){
         if(data == null)
             return null;
-        Collections.sort(data);
+        //Collections.sort(data);
         ArrayList<Entry> entries = new ArrayList<>();
         LocalDate currentDate = LocalDate.now();
 
         for(int i = 0; i < data.size(); i++){
-            StockQuote quote = data.get(i);
-            if(quote.getDate().isAfter(currentDate.minusDays(1))){
+            StockHistorycalData quote = data.get(i);
+            /*if(quote.getDate().isAfter(currentDate.minusDays(1))){
                 float price = Float.parseFloat(quote.getClose());
                 entries.add(new Entry(i, price));
-            }
+            }*/
         }
 
         LineDataSet dataSet = new LineDataSet(entries, "Variação diária");
@@ -96,20 +96,20 @@ public class ChartUtil {
         return new LineData(dataSet);
     }
 
-    public static LineData getTreeDayChart(final LineChart chart, final List<StockQuote> data){
+    public static LineData getTreeDayChart(final LineChart chart, final List<StockHistorycalData> data){
         if(data == null)
             return null;
 
-        Collections.sort(data);
+        //Collections.sort(data);
         final ArrayList<Entry> entries = new ArrayList<>();
         LocalDate currentDate = LocalDate.now();
 
         for(int i = 0; i < data.size(); i++){
-            StockQuote quote = data.get(i);
-            if(quote.getDate().isAfter(currentDate.minusDays(3))){
+            StockHistorycalData quote = data.get(i);
+            /*if(quote.getDate().isAfter(currentDate.minusDays(3))){
                 float price = Float.parseFloat(quote.getClose());
                 entries.add(new Entry(i, price));
-            }
+            }*/
         }
 
         LineDataSet dataSet = new LineDataSet(entries, "Variação 3 dias");
@@ -174,20 +174,20 @@ public class ChartUtil {
         return new LineData(dataSet);
     }
 
-    public static LineData getSixMonthsChart(final LineChart chart, final List<StockQuote> data){
+    public static LineData getSixMonthsChart(final LineChart chart, final List<StockHistorycalData> data){
         if(data == null)
             return null;
 
-        Collections.sort(data);
+        //Collections.sort(data);
         final ArrayList<Entry> entries = new ArrayList<>();
         LocalDate currentDate = LocalDate.now();
 
         for(int i = 0 ; i < data.size(); i++){
-            StockQuote quote = data.get(i);
-            if(quote.getDate().isAfter(currentDate.minusMonths(6))){
+            StockHistorycalData quote = data.get(i);
+            /*if(quote.getDate().isAfter(currentDate.minusMonths(6))){
                 float price = Float.parseFloat(quote.getClose());
                 entries.add(new Entry(i, price));
-            }
+            }*/
         }
 
         LineDataSet dataSet = new LineDataSet(entries, "Variação 6 meses");
@@ -209,7 +209,7 @@ public class ChartUtil {
         // Set the xAxis position to bottom. Default is top
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         //Customizing x axis value
-        ValueFormatter formatter = new IndexAxisValueFormatter(){
+        /*ValueFormatter formatter = new IndexAxisValueFormatter(){
             @Override
             public String getFormattedValue(float value) {
                 if(value == 0)
@@ -225,8 +225,8 @@ public class ChartUtil {
                 else
                     return "";
             }
-        };
-        xAxis.setValueFormatter(formatter);
+        };*/
+        //xAxis.setValueFormatter(formatter);
         xAxis.setGranularity(1f); // minimum axis-step (interval) is 1
         //***
         // Controlling right side of y axis
@@ -240,20 +240,20 @@ public class ChartUtil {
         return new LineData(dataSet);
     }
 
-    public static LineData getMonthChart(final LineChart chart, final List<StockQuote> data){
+    public static LineData getMonthChart(final LineChart chart, final List<StockHistorycalData> data){
         if(data == null)
             return null;
 
-        Collections.sort(data);
+        //Collections.sort(data);
         final ArrayList<Entry> entries = new ArrayList<>();
         LocalDate currentDate = LocalDate.now();
 
         for(int i = 0 ; i < data.size(); i++){
-            StockQuote quote = data.get(i);
-            if(quote.getDate().isAfter(currentDate.minusMonths(1))){
+            StockHistorycalData quote = data.get(i);
+            /*if(quote.getDate().isAfter(currentDate.minusMonths(1))){
                 float price = Float.parseFloat(quote.getClose());
                 entries.add(new Entry(i, price));
-            }
+            }*/
         }
 
         LineDataSet dataSet = new LineDataSet(entries, "Variação 1 mês");
@@ -275,7 +275,7 @@ public class ChartUtil {
         // Set the xAxis position to bottom. Default is top
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         //Customizing x axis value
-        ValueFormatter formatter = new IndexAxisValueFormatter(){
+        /*ValueFormatter formatter = new IndexAxisValueFormatter(){
             @Override
             public String getFormattedValue(float value) {
                 if(value == 0)
@@ -292,7 +292,7 @@ public class ChartUtil {
                     return "";
             }
         };
-        xAxis.setValueFormatter(formatter);
+        xAxis.setValueFormatter(formatter);*/
         xAxis.setGranularity(1f); // minimum axis-step (interval) is 1
         //***
         // Controlling right side of y axis

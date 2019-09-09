@@ -3,7 +3,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import br.com.analisadorb3.R;
 import br.com.analisadorb3.fragments.MainFragment;
-import br.com.analisadorb3.viewmodel.MainViewModel;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -11,7 +10,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        MainFragment fragment = MainFragment.newInstance(new MainViewModel(getApplication()));
+        MainFragment fragment = MainFragment.newInstance();
         getSupportFragmentManager().beginTransaction().add(R.id.content_frame, fragment, "mainFragment").commit();
     }
 }

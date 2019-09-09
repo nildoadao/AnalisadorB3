@@ -5,22 +5,44 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import br.com.analisadorb3.R;
 import br.com.analisadorb3.databinding.MainFragmentBinding;
-import br.com.analisadorb3.models.StockQuote;
-import br.com.analisadorb3.view.StockItemHolder;
+import br.com.analisadorb3.models.StockRealTimeData;
 
-public class StockItemAdapter extends RecyclerView.Adapter<StockItemHolder> {
+public class StockItemAdapter extends RecyclerView.Adapter<StockItemAdapter.StockItemHolder> {
 
-    private final List<StockQuote> stocks;
+    class StockItemHolder extends RecyclerView.ViewHolder{
+        private TextView stockName;
+        private TextView stockPrice;
+        private TextView stockChangePercent;
+        private ImageView arrowStatus;
+
+        public StockItemHolder(@NonNull View itemView) {
+            super(itemView);
+            stockName = itemView.findViewById(R.id.stock_name);
+            stockPrice = itemView.findViewById(R.id.stock_price);
+            stockChangePercent = itemView.findViewById(R.id.stock_change_percent);
+            arrowStatus = itemView.findViewById(R.id.stock_arrow_status);
+        }
+    }
+
+    private List<StockRealTimeData> stocks = new ArrayList<>();
     private OnItemClickListener clickListener;
     private OnItemLongClickListener longClickListener;
+
+    public void setStocks(List<StockRealTimeData> stocks){
+        this.stocks = stocks;
+        notifyDataSetChanged();
+    }
 
     public interface OnItemClickListener{
         void onItemClick(Context context, int position);
@@ -28,9 +50,6 @@ public class StockItemAdapter extends RecyclerView.Adapter<StockItemHolder> {
 
     public interface OnItemLongClickListener{
         boolean OnItemLongClick(Context context, int position);
-    }
-    public StockItemAdapter(List<StockQuote> stocks){
-        this.stocks = stocks;
     }
 
     public void setOnItemClickListener(OnItemClickListener clickListener){
@@ -44,61 +63,43 @@ public class StockItemAdapter extends RecyclerView.Adapter<StockItemHolder> {
     @NonNull
     @Override
     public StockItemHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        MainFragmentBinding binding = MainFragmentBinding.inflate(inflater, parent, false);
-        return new StockItemHolder(binding);
+        View itemView = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.stock_item, parent, false);
+        return new StockItemHolder(itemView);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull StockItemHolder holder, final int position) {
-        StockQuote stock = stocks.get(position);
-        holder.stockSymbol.setText(stock.getSymbol());
-        holder.stockPrice.setText(String.format("%s %s", stock.getPrice(), stock.getCurrency()));
-        holder.stockChange.setText(String.format("%s (%s",
-                stock.getChange(), stock.getChangePercent()) + "%)");
+    public void onBindViewHolder(@NonNull StockItemHolder holder, int position) {
+        StockRealTimeData currentStock = stocks.get(position);
+        holder.stockName.setText(currentStock.getName());
+        holder.stockPrice.setText(currentStock.getPrice());
+        String changeText = String.format("%s (%s",
+                currentStock.getDayChange(), currentStock.getChangePercent()) + "%)";
+        holder.stockChangePercent.setText(changeText);
 
         Double change;
         try {
-            change = Double.parseDouble(stock.getChange());
+            change = Double.parseDouble(currentStock.getDayChange());
         }
         catch (Exception e){
             change = null;
         }
 
         if(change == null){
-            holder.stockChange.setVisibility(View.INVISIBLE);
+            holder.stockChangePercent.setVisibility(View.INVISIBLE);
         }
         else if(change >= 0) {
-            holder.stockChange.setTextColor(Color.argb(255, 0, 127, 0));
-            holder.changeArrow.setImageResource(R.drawable.arrow_up);
+            holder.stockChangePercent.setTextColor(Color.argb(255, 0, 127, 0));
+            holder.arrowStatus.setImageResource(R.drawable.arrow_up);
         }
         else {
-            holder.stockChange.setTextColor(Color.RED);
-            holder.changeArrow.setImageResource(R.drawable.arrow_down);
+            holder.stockChangePercent.setTextColor(Color.RED);
+            holder.arrowStatus.setImageResource(R.drawable.arrow_down);
         }
-
-        holder.stockCard.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(clickListener != null){
-                    clickListener.onItemClick(view.getContext(), position);
-                }
-            }
-        });
-
-        holder.stockCard.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                if(longClickListener != null){
-                    longClickListener.OnItemLongClick(view.getContext(), position);
-                }
-                return false;
-            }
-        });
     }
 
     @Override
     public int getItemCount() {
-        return stocks != null ? stocks.size() : 0;
+        return stocks.size();
     }
 }
