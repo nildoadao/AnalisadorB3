@@ -72,7 +72,9 @@ public class StockItemAdapter extends RecyclerView.Adapter<StockItemAdapter.Stoc
     public void onBindViewHolder(@NonNull StockItemHolder holder, int position) {
         StockRealTimeData currentStock = stocks.get(position);
         holder.stockName.setText(currentStock.getName());
-        holder.stockPrice.setText(currentStock.getPrice());
+        String priceText = String.format("%s %s", currentStock.getPrice(),
+                currentStock.getCurrency());
+        holder.stockPrice.setText(priceText);
         String changeText = String.format("%s (%s",
                 currentStock.getDayChange(), currentStock.getChangePercent()) + "%)";
         holder.stockChangePercent.setText(changeText);

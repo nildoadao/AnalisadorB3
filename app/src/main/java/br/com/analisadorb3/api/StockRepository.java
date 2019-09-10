@@ -14,7 +14,7 @@ import retrofit2.Response;
 
 public class StockRepository {
 
-    private final String worldTradingToken = "rwNhIENB5s0xpmzAOzBmyBBW944f8uoBUHkT7qEwVsKRXrzFRmLqpFDEo8Eq";
+    private final String WORLD_TRADING_TOKEN = "rwNhIENB5s0xpmzAOzBmyBBW944f8uoBUHkT7qEwVsKRXrzFRmLqpFDEo8Eq";
     private static StockRepository stockRepository;
     private WorldTradingApi worldTradingApi;
 
@@ -32,7 +32,7 @@ public class StockRepository {
     public MutableLiveData<List<StockRealTimeData>> getLastQuote(List<String> symbols){
 
         final MutableLiveData<List<StockRealTimeData>> lastQuote = new MutableLiveData<>();
-        worldTradingApi.getLastQuote(String.join(",", symbols), worldTradingToken)
+        worldTradingApi.getLastQuote(String.join(",", symbols), WORLD_TRADING_TOKEN)
                 .enqueue(new Callback<RealTimeDataResponse>() {
                     @Override
                     public void onResponse(Call<RealTimeDataResponse> call, Response<RealTimeDataResponse> response) {
@@ -53,7 +53,7 @@ public class StockRepository {
 
     public MutableLiveData<List<StockHistorycalData>> getDailyTimeSeries(String symbol, String dateFrom, String dateTo){
         final MutableLiveData<List<StockHistorycalData>> dailyData = new MutableLiveData<>();
-        worldTradingApi.getDailyTimeSeries(symbol, worldTradingToken, dateFrom, dateTo)
+        worldTradingApi.getDailyTimeSeries(symbol, WORLD_TRADING_TOKEN, dateFrom, dateTo)
                 .enqueue(new Callback<List<StockHistorycalData>>() {
                     @Override
                     public void onResponse(Call<List<StockHistorycalData>> call, Response<List<StockHistorycalData>> response) {
@@ -74,7 +74,7 @@ public class StockRepository {
 
     public MutableLiveData<List<StockSearchResult>> searchStock(String searchTerm){
         final MutableLiveData<List<StockSearchResult>> searchResult = new MutableLiveData<>();
-        worldTradingApi.searchStock(searchTerm, worldTradingToken)
+        worldTradingApi.searchStock(searchTerm, WORLD_TRADING_TOKEN)
                 .enqueue(new Callback<List<StockSearchResult>>() {
                     @Override
                     public void onResponse(Call<List<StockSearchResult>> call, Response<List<StockSearchResult>> response) {

@@ -12,11 +12,11 @@ import retrofit2.http.Query;
 public interface WorldTradingApi {
 
     @GET("stock")
-    Call<RealTimeDataResponse> getLastQuote(@Query("symbols") String symbols,
+    Call<RealTimeDataResponse> getLastQuote(@Query(value = "symbol", encoded = true) String symbols,
                                             @Query("api_token") String token);
 
     @GET("history")
-    Call<List<StockHistorycalData>> getDailyTimeSeries(@Query("symbol") String symbol,
+    Call<List<StockHistorycalData>> getDailyTimeSeries(@Query(value = "symbol", encoded = true) String symbol,
                                                        @Query("api_token") String token,
                                                        @Query("date_from") String dateFrom,
                                                        @Query("date_to") String dateTo);

@@ -61,7 +61,7 @@ public class StockRealTimeData {
     private String gmtOffset;
 
     @SerializedName("last_trade_time")
-    private LocalDate lastTradingTime;
+    private String lastTradingTime;
 
     public String getSymbol() {
         return symbol;
@@ -111,7 +111,7 @@ public class StockRealTimeData {
         return volume;
     }
 
-    public LocalDate getLastTradingTime() {
+    public String getLastTradingTime() {
         return lastTradingTime;
     }
 
@@ -163,7 +163,7 @@ public class StockRealTimeData {
         this.volume = volume;
     }
 
-    public void setLastTradingTime(LocalDate lastTradingTime) {
+    public void setLastTradingTime(String lastTradingTime) {
         this.lastTradingTime = lastTradingTime;
     }
 

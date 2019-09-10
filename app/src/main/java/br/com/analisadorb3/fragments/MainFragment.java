@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,10 +48,17 @@ public class MainFragment extends Fragment {
         if(savedInstanceState == null){
             viewModel.init();
         }
-        RecyclerView recyclerView = getView().findViewById(R.id.stock_recycler_view);
+        final RecyclerView recyclerView = getView().findViewById(R.id.stock_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         final StockItemAdapter adapter = new StockItemAdapter();
         recyclerView.setAdapter(adapter);
+        final SwipeRefreshLayout refreshLayout = getView().findViewById(R.id.stock_swipe_refresh);
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                viewModel.updateStocks();
+            }
+        });
 
         viewModel.getSavedStocks().observe(this, new Observer<List<StockRealTimeData>>() {
             @Override
