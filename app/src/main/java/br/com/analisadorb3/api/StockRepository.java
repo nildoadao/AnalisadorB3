@@ -15,8 +15,19 @@ import retrofit2.Response;
 public class StockRepository {
 
     private final String WORLD_TRADING_TOKEN = "rwNhIENB5s0xpmzAOzBmyBBW944f8uoBUHkT7qEwVsKRXrzFRmLqpFDEo8Eq";
+
     private static StockRepository stockRepository;
     private WorldTradingApi worldTradingApi;
+    private String errorMessage;
+    private OnRequestCompletedListener requestListener;
+
+    public interface OnRequestCompletedListener{
+        void onRequestCompleted();
+    }
+
+    public void setOnRequestCompletedListener(OnRequestCompletedListener listener){
+        requestListener = listener;
+    }
 
     public static StockRepository getInstance(){
         if(stockRepository == null)
@@ -29,6 +40,15 @@ public class StockRepository {
         worldTradingApi = RetrofitService.createService(WorldTradingApi.class, false);
     }
 
+    public String getErrorMessage(){
+        return errorMessage;
+    }
+
+    private void onRequestCompleted(){
+        if(requestListener != null)
+            requestListener.onRequestCompleted();
+    }
+
     public MutableLiveData<List<StockRealTimeData>> getLastQuote(List<String> symbols){
 
         final MutableLiveData<List<StockRealTimeData>> lastQuote = new MutableLiveData<>();
@@ -37,15 +57,20 @@ public class StockRepository {
                     @Override
                     public void onResponse(Call<RealTimeDataResponse> call, Response<RealTimeDataResponse> response) {
                         if(!response.isSuccessful()){
+                            errorMessage = "Status code" + response.code();
                             lastQuote.setValue(null);
+                            onRequestCompleted();
                             return;
                         }
                         lastQuote.setValue(response.body().getData());
+                        onRequestCompleted();
                     }
 
                     @Override
                     public void onFailure(Call<RealTimeDataResponse> call, Throwable t) {
+                        errorMessage = t.getMessage();
                         lastQuote.setValue(null);
+                        onRequestCompleted();
                     }
                 });
         return lastQuote;
@@ -59,14 +84,17 @@ public class StockRepository {
                     public void onResponse(Call<List<StockHistorycalData>> call, Response<List<StockHistorycalData>> response) {
                         if(!response.isSuccessful()){
                             dailyData.setValue(null);
+                            onRequestCompleted();
                             return;
                         }
                         dailyData.setValue(response.body());
+                        onRequestCompleted();
                     }
 
                     @Override
                     public void onFailure(Call<List<StockHistorycalData>> call, Throwable t) {
                         dailyData.setValue(null);
+                        onRequestCompleted();
                     }
                 });
         return dailyData;
@@ -80,14 +108,17 @@ public class StockRepository {
                     public void onResponse(Call<List<StockSearchResult>> call, Response<List<StockSearchResult>> response) {
                         if(!response.isSuccessful()){
                             searchResult.setValue(null);
+                            onRequestCompleted();
                             return;
                         }
                         searchResult.setValue(response.body());
+                        onRequestCompleted();
                     }
 
                     @Override
                     public void onFailure(Call<List<StockSearchResult>> call, Throwable t) {
                         searchResult.setValue(null);
+                        onRequestCompleted();
                     }
                 });
         return searchResult;

@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import br.com.analisadorb3.R;
-import br.com.analisadorb3.databinding.MainFragmentBinding;
 import br.com.analisadorb3.models.StockRealTimeData;
 
 public class StockItemAdapter extends RecyclerView.Adapter<StockItemAdapter.StockItemHolder> {
@@ -44,6 +43,10 @@ public class StockItemAdapter extends RecyclerView.Adapter<StockItemAdapter.Stoc
         notifyDataSetChanged();
     }
 
+    public StockRealTimeData getStockAt(int position){
+        return stocks.get(position);
+    }
+
     public interface OnItemClickListener{
         void onItemClick(Context context, int position);
     }
@@ -64,7 +67,7 @@ public class StockItemAdapter extends RecyclerView.Adapter<StockItemAdapter.Stoc
     @Override
     public StockItemHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.stock_item, parent, false);
+                .inflate(R.layout.stock_card, parent, false);
         return new StockItemHolder(itemView);
     }
 
@@ -102,6 +105,9 @@ public class StockItemAdapter extends RecyclerView.Adapter<StockItemAdapter.Stoc
 
     @Override
     public int getItemCount() {
-        return stocks.size();
+        if(stocks != null)
+            return stocks.size();
+        else
+            return 0;
     }
 }
