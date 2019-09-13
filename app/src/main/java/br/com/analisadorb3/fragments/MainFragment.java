@@ -72,7 +72,7 @@ public class MainFragment extends Fragment {
         viewModel.getSavedStocks().observe(this, new Observer<List<StockRealTimeData>>() {
             @Override
             public void onChanged(List<StockRealTimeData> stockRealTimeData) {
-                adapter.setStocks(stockRealTimeData);
+                adapter.submitList(stockRealTimeData);
             }
         });
 

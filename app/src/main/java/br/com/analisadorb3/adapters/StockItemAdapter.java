@@ -9,15 +9,33 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import br.com.analisadorb3.R;
 import br.com.analisadorb3.models.StockRealTimeData;
 
-public class StockItemAdapter extends RecyclerView.Adapter<StockItemAdapter.StockItemHolder> {
+public class StockItemAdapter extends ListAdapter<StockRealTimeData, StockItemAdapter.StockItemHolder> {
+
+    public StockItemAdapter() {
+        super(DIFF_CALLBACK);
+    }
+
+    private static final DiffUtil.ItemCallback<StockRealTimeData> DIFF_CALLBACK = new DiffUtil.ItemCallback<StockRealTimeData>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull StockRealTimeData oldItem, @NonNull StockRealTimeData newItem) {
+            return oldItem.getSymbol().equals(newItem.getSymbol());
+        }
+
+        @Override
+        public boolean areContentsTheSame(@NonNull StockRealTimeData oldItem, @NonNull StockRealTimeData newItem) {
+            return oldItem.getSymbol().equals(newItem.getSymbol()) &&
+                    oldItem.getName().equals(newItem.getName()) &&
+                    oldItem.getPrice().equals(newItem.getPrice()) &&
+                    oldItem.getCurrency().equals(newItem.getCurrency());
+        }
+    };
 
     class StockItemHolder extends RecyclerView.ViewHolder{
         private TextView stockName;
@@ -25,42 +43,37 @@ public class StockItemAdapter extends RecyclerView.Adapter<StockItemAdapter.Stoc
         private TextView stockChangePercent;
         private ImageView arrowStatus;
 
-        public StockItemHolder(@NonNull View itemView) {
+        public StockItemHolder(@NonNull final View itemView) {
             super(itemView);
             stockName = itemView.findViewById(R.id.stock_name);
             stockPrice = itemView.findViewById(R.id.stock_price);
             stockChangePercent = itemView.findViewById(R.id.stock_change_percent);
             arrowStatus = itemView.findViewById(R.id.stock_arrow_status);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    int position = getAdapterPosition();
+                    if(clickListener != null && position != RecyclerView.NO_POSITION){
+                        clickListener.onItemClick(itemView.getContext(), position);
+                    }
+                }
+            });
         }
     }
 
-    private List<StockRealTimeData> stocks = new ArrayList<>();
     private OnItemClickListener clickListener;
-    private OnItemLongClickListener longClickListener;
-
-    public void setStocks(List<StockRealTimeData> stocks){
-        this.stocks = stocks;
-        notifyDataSetChanged();
-    }
 
     public StockRealTimeData getStockAt(int position){
-        return stocks.get(position);
+        return getItem(position);
     }
 
     public interface OnItemClickListener{
         void onItemClick(Context context, int position);
     }
 
-    public interface OnItemLongClickListener{
-        boolean OnItemLongClick(Context context, int position);
-    }
-
     public void setOnItemClickListener(OnItemClickListener clickListener){
         this.clickListener = clickListener;
-    }
-
-    public void setOnItemLongClickListener(OnItemLongClickListener longClickListener){
-        this.longClickListener = longClickListener;
     }
 
     @NonNull
@@ -73,7 +86,7 @@ public class StockItemAdapter extends RecyclerView.Adapter<StockItemAdapter.Stoc
 
     @Override
     public void onBindViewHolder(@NonNull StockItemHolder holder, int position) {
-        StockRealTimeData currentStock = stocks.get(position);
+        StockRealTimeData currentStock = getItem(position);
         holder.stockName.setText(currentStock.getName());
         String priceText = String.format("%s %s", currentStock.getPrice(),
                 currentStock.getCurrency());
@@ -101,13 +114,8 @@ public class StockItemAdapter extends RecyclerView.Adapter<StockItemAdapter.Stoc
             holder.stockChangePercent.setTextColor(Color.RED);
             holder.arrowStatus.setImageResource(R.drawable.arrow_down);
         }
+
+
     }
 
-    @Override
-    public int getItemCount() {
-        if(stocks != null)
-            return stocks.size();
-        else
-            return 0;
-    }
 }

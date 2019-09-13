@@ -22,19 +22,21 @@
             android:text="@string/wallet"
             android:textColor="@android:color/black"
             android:textSize="24sp"
+            app:layout_constraintBottom_toTopOf="@+id/stock_swipe_refresh"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/search_button"
-            style="@style/Widget.Design.FloatingActionButton"
+            style="@style/Widget.AppCompat.Button.Borderless"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
+            android:background="@android:drawable/ic_menu_search"
             android:clickable="true"
             android:src="@drawable/search_icon"
-            app:backgroundTint="@android:color/transparent"
+            app:backgroundTint="@color/design_default_color_primary_dark"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
