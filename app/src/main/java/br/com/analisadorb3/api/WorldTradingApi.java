@@ -4,7 +4,7 @@ import java.util.List;
 
 import br.com.analisadorb3.models.RealTimeDataResponse;
 import br.com.analisadorb3.models.StockHistorycalData;
-import br.com.analisadorb3.models.StockSearchResult;
+import br.com.analisadorb3.models.StockSearchResponse;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
@@ -22,6 +22,6 @@ public interface WorldTradingApi {
                                                        @Query("date_to") String dateTo);
 
     @GET("stock_search")
-    Call<List<StockSearchResult>> searchStock(@Query("search_term") String searchTerm,
-                                              @Query("api_token") String token);
+    Call<StockSearchResponse> searchStock(@Query("search_term") String searchTerm,
+                                          @Query("api_token") String token);
 }

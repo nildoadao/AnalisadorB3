@@ -1,5 +1,7 @@
 package br.com.analisadorb3.api;
 
+import android.text.TextUtils;
+
 import androidx.lifecycle.MutableLiveData;
 
 import java.util.List;
@@ -7,6 +9,7 @@ import java.util.List;
 import br.com.analisadorb3.models.RealTimeDataResponse;
 import br.com.analisadorb3.models.StockHistorycalData;
 import br.com.analisadorb3.models.StockRealTimeData;
+import br.com.analisadorb3.models.StockSearchResponse;
 import br.com.analisadorb3.models.StockSearchResult;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -20,6 +23,8 @@ public class StockRepository {
     private WorldTradingApi worldTradingApi;
     private String errorMessage;
     private OnRequestCompletedListener requestListener;
+    private MutableLiveData<List<StockSearchResult>> searchResult = new MutableLiveData<>();
+
 
     public interface OnRequestCompletedListener{
         void onRequestCompleted();
@@ -44,6 +49,10 @@ public class StockRepository {
         return errorMessage;
     }
 
+    public MutableLiveData<List<StockSearchResult>> getSearchResult(){
+        return searchResult;
+    }
+
     private void onRequestCompleted(){
         if(requestListener != null)
             requestListener.onRequestCompleted();
@@ -52,7 +61,7 @@ public class StockRepository {
     public MutableLiveData<List<StockRealTimeData>> getLastQuote(List<String> symbols){
 
         final MutableLiveData<List<StockRealTimeData>> lastQuote = new MutableLiveData<>();
-        worldTradingApi.getLastQuote(String.join(",", symbols), WORLD_TRADING_TOKEN)
+        worldTradingApi.getLastQuote(TextUtils.join(",", symbols), WORLD_TRADING_TOKEN)
                 .enqueue(new Callback<RealTimeDataResponse>() {
                     @Override
                     public void onResponse(Call<RealTimeDataResponse> call, Response<RealTimeDataResponse> response) {
@@ -100,27 +109,25 @@ public class StockRepository {
         return dailyData;
     }
 
-    public MutableLiveData<List<StockSearchResult>> searchStock(String searchTerm){
-        final MutableLiveData<List<StockSearchResult>> searchResult = new MutableLiveData<>();
+    public void searchStock(String searchTerm){
         worldTradingApi.searchStock(searchTerm, WORLD_TRADING_TOKEN)
-                .enqueue(new Callback<List<StockSearchResult>>() {
+                .enqueue(new Callback<StockSearchResponse>() {
                     @Override
-                    public void onResponse(Call<List<StockSearchResult>> call, Response<List<StockSearchResult>> response) {
+                    public void onResponse(Call<StockSearchResponse> call, Response<StockSearchResponse> response) {
                         if(!response.isSuccessful()){
-                            searchResult.setValue(null);
+                            searchResult.postValue(null);
                             onRequestCompleted();
                             return;
                         }
-                        searchResult.setValue(response.body());
+                        searchResult.postValue(response.body().getData());
                         onRequestCompleted();
                     }
 
                     @Override
-                    public void onFailure(Call<List<StockSearchResult>> call, Throwable t) {
-                        searchResult.setValue(null);
+                    public void onFailure(Call<StockSearchResponse> call, Throwable t) {
+                        searchResult.postValue(null);
                         onRequestCompleted();
                     }
                 });
-        return searchResult;
     }
 }

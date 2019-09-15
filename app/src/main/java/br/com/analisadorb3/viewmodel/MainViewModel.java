@@ -1,7 +1,6 @@
 package br.com.analisadorb3.viewmodel;
 
 import android.app.Application;
-import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -63,6 +62,6 @@ public class MainViewModel extends AndroidViewModel {
     public void updateStocks(){
         refreshing.setValue(true);
         SettingsUtil settingsUtil = new SettingsUtil(getApplication().getBaseContext());
-        savedStocks = repository.getLastQuote(settingsUtil.getFavouriteStocks());
+        savedStocks.postValue(repository.getLastQuote(settingsUtil.getFavouriteStocks()).getValue());
     }
 }
