@@ -50,9 +50,6 @@ public class MainFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        if(savedInstanceState == null){
-            viewModel.init();
-        }
         final RecyclerView recyclerView = getView().findViewById(R.id.stock_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         final StockItemAdapter adapter = new StockItemAdapter();
@@ -61,7 +58,7 @@ public class MainFragment extends Fragment {
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                viewModel.updateStocks();
+                viewModel.updateStocks(getActivity().getApplication());
             }
         });
 
@@ -100,5 +97,8 @@ public class MainFragment extends Fragment {
                 Navigation.findNavController(view).navigate(R.id.searchFragment);
             }
         });
+        if(savedInstanceState == null){
+            viewModel.updateStocks(getActivity().getApplication());
+        }
     }
 }

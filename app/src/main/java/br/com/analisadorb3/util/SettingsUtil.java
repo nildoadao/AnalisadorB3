@@ -5,18 +5,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 
 public class SettingsUtil {
 
     public static final String SAVED_STOCKS = "SavedStocks";
-    private Context context;
 
-    public SettingsUtil(Context context){
-        this.context = context;
-    }
-
-    public List<String> getFavouriteStocks(){
+    public static List<String> getFavouriteStocks(Context context){
         SharedPreferences settings = context.getSharedPreferences(SAVED_STOCKS, 0);
         try{
             JSONArray json = new JSONArray(settings.getString("favouriteStocks", ""));
@@ -31,11 +27,11 @@ public class SettingsUtil {
         }
     }
 
-    public boolean saveFavouriteStock(String stock){
+    public static boolean saveFavouriteStock(Context context, String stock){
         if(stock == null || stock.equals(""))
             return false;
 
-        List<String> favouriteStocks = getFavouriteStocks();
+        List<String> favouriteStocks = getFavouriteStocks(context);
 
         if(favouriteStocks.contains(stock))
             return false;
@@ -54,11 +50,11 @@ public class SettingsUtil {
         return true;
     }
 
-    public boolean removeFavouriteStock(String stock){
+    public static boolean removeFavouriteStock(Context context, String stock){
         if(stock == null || stock.equals(""))
             return false;
 
-        List<String> favouriteStocks = getFavouriteStocks();
+        List<String> favouriteStocks = getFavouriteStocks(context);
 
         if(!favouriteStocks.contains(stock))
             return false;

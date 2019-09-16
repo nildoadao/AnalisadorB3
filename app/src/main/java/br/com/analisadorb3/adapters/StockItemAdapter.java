@@ -40,6 +40,7 @@ public class StockItemAdapter extends ListAdapter<StockRealTimeData, StockItemAd
     class StockItemHolder extends RecyclerView.ViewHolder{
         private TextView stockName;
         private TextView stockPrice;
+        private TextView stockSymbol;
         private TextView stockChangePercent;
         private ImageView arrowStatus;
 
@@ -47,6 +48,7 @@ public class StockItemAdapter extends ListAdapter<StockRealTimeData, StockItemAd
             super(itemView);
             stockName = itemView.findViewById(R.id.stock_name);
             stockPrice = itemView.findViewById(R.id.stock_price);
+            stockSymbol = itemView.findViewById(R.id.stock_symbol);
             stockChangePercent = itemView.findViewById(R.id.stock_change_percent);
             arrowStatus = itemView.findViewById(R.id.stock_arrow_status);
 
@@ -91,6 +93,7 @@ public class StockItemAdapter extends ListAdapter<StockRealTimeData, StockItemAd
         String priceText = String.format("%s %s", currentStock.getPrice(),
                 currentStock.getCurrency());
         holder.stockPrice.setText(priceText);
+        holder.stockSymbol.setText(currentStock.getSymbol());
         String changeText = String.format("%s (%s",
                 currentStock.getDayChange(), currentStock.getChangePercent()) + "%)";
         holder.stockChangePercent.setText(changeText);
@@ -114,7 +117,6 @@ public class StockItemAdapter extends ListAdapter<StockRealTimeData, StockItemAd
             holder.stockChangePercent.setTextColor(Color.RED);
             holder.arrowStatus.setImageResource(R.drawable.arrow_down);
         }
-
 
     }
 

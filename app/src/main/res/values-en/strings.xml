@@ -6,4 +6,24 @@
     <string name="search_hint">Search</string>
     <string name="stocks">Stocks</string>
     <string name="wallet">Wallet</string>
+    <string name="alpha_vantage_request_per_minute_exceeded">You exceded 5 requests per minute, wait and try again later</string>
+    <string name="average_change_3">Average change 3 months</string>
+    <string name="day_change">Day change</string>
+    <string name="empty_search">The search didn`t return results</string>
+    <string name="empty_wallet">Your wallet is empty</string>
+    <string name="no">No</string>
+    <string name="no_internet">No network connection</string>
+    <string name="one_day">1D</string>
+    <string name="one_month">1M</string>
+    <string name="one_week">1W</string>
+    <string name="open">Open</string>
+    <string name="previous_close">Last close</string>
+    <string name="remove_fail">Fail to remove</string>
+    <string name="six_months">6M</string>
+    <string name="stocks_saved_limit">Your reach the limit with 5 save itens</string>
+    <string name="stop_follow">Stop follow</string>
+    <string name="volume">Volume</string>
+    <string name="yes">Yes</string>
+    <string name="world_trading_day_limit_exceeded">You reach the limit for daily requests</string>
+    <string name="tree_days">3D</string>
 </resources>
