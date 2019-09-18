@@ -3,7 +3,7 @@
     <string name="app_name">Analisador B3</string>
     <string name="removed">Removed</string>
     <string name="saved">Save</string>
-    <string name="search_hint">Search</string>
+    <string name="search_hint">Search...</string>
     <string name="stocks">Stocks</string>
     <string name="wallet">Wallet</string>
     <string name="alpha_vantage_request_per_minute_exceeded">You exceded 5 requests per minute, wait and try again later</string>
@@ -26,4 +26,7 @@
     <string name="yes">Yes</string>
     <string name="world_trading_day_limit_exceeded">You reach the limit for daily requests</string>
     <string name="tree_days">3D</string>
+    <string name="statistics">Statistics</string>
+    <string name="day_low">Low</string>
+    <string name="day_high">High</string>
 </resources>

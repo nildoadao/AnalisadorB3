@@ -15,13 +15,13 @@
 
         <TextView
             android:id="@+id/wallet_text"
+            style="@style/TextAppearance.AppCompat.Display1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:text="@string/wallet"
-            android:textColor="@android:color/black"
-            android:textSize="24sp"
+            android:textColor="@color/design_default_color_primary_dark"
             app:layout_constraintBottom_toTopOf="@+id/stock_swipe_refresh"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

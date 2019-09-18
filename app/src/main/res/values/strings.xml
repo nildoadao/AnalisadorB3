@@ -29,4 +29,7 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="statistics">Estatisticas</string>
+    <string name="day_low">Minima</string>
+    <string name="day_high">Maxima</string>
 </resources>

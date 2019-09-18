@@ -1,7 +1,23 @@
 package br.com.analisadorb3.viewmodel;
 
-import androidx.lifecycle.ViewModel;
+import android.app.Application;
 
-public class StockInfoViewModel extends ViewModel {
-    // TODO: Implement the ViewModel
+import androidx.annotation.NonNull;
+import androidx.databinding.ObservableBoolean;
+import androidx.lifecycle.AndroidViewModel;
+
+import br.com.analisadorb3.api.StockRepository;
+import br.com.analisadorb3.models.StockRealTimeData;
+
+public class StockInfoViewModel extends AndroidViewModel {
+
+    private StockRealTimeData lastQuote;
+    private ObservableBoolean refreshing;
+    private StockRepository repository;
+
+    public StockInfoViewModel(@NonNull Application application) {
+        super(application);
+        repository = StockRepository.getInstance();
+    }
+
 }

@@ -64,8 +64,7 @@
             android:layout_weight="1"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/stock_change_percent"
-            app:layout_constraintTop_toBottomOf="@id/stock_name"
-            app:layout_constraintVertical_bias="0.6" />
+            app:layout_constraintTop_toBottomOf="@id/stock_name"/>
 
         <TextView
             android:id="@+id/stock_change_percent"
