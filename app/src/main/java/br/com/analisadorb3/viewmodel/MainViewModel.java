@@ -36,4 +36,8 @@ public class MainViewModel extends AndroidViewModel {
     public void updateStocks(Context context){
         repository.getLastQuote(SettingsUtil.getFavouriteStocks(context));
     }
+
+    public void setSelectedStock(StockRealTimeData stock){
+        repository.setSelectedStock(stock);
+    }
 }

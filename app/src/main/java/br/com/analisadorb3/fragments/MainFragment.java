@@ -4,6 +4,7 @@ import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -33,11 +34,6 @@ import br.com.analisadorb3.viewmodel.MainViewModel;
 public class MainFragment extends Fragment {
 
     private MainViewModel viewModel;
-
-    public static MainFragment newInstance() {
-        MainFragment fragment = new MainFragment();
-        return fragment;
-    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -73,6 +69,14 @@ public class MainFragment extends Fragment {
             @Override
             public void onChanged(List<StockRealTimeData> stockRealTimeData) {
                 adapter.submitList(stockRealTimeData);
+            }
+        });
+
+        adapter.setOnItemClickListener(new StockItemAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(Context context, int position) {
+                viewModel.setSelectedStock(adapter.getStockAt(position));
+                Navigation.findNavController(getView()).navigate(R.id.stockInfoFragment);
             }
         });
 

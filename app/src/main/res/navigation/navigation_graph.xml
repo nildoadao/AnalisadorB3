@@ -13,10 +13,22 @@
         <action
             android:id="@+id/action_mainFragment_to_searchFragment"
             app:destination="@id/searchFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_stockInfoFragment"
+            app:destination="@id/stockInfoFragment" />
     </fragment>
     <fragment
         android:id="@+id/searchFragment"
         android:name="br.com.analisadorb3.fragments.SearchFragment"
         android:label="fragment_search"
-        tools:layout="@layout/fragment_search" />
+        tools:layout="@layout/fragment_search" >
+        <action
+            android:id="@+id/action_searchFragment_to_stockInfoFragment"
+            app:destination="@id/stockInfoFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/stockInfoFragment"
+        android:name="br.com.analisadorb3.fragments.StockInfoFragment"
+        android:label="stock_info_fragment"
+        tools:layout="@layout/stock_info_fragment" />
 </navigation>

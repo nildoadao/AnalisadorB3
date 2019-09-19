@@ -29,6 +29,7 @@ public class StockRepository {
     private MutableLiveData<List<StockRealTimeData>> lastQuotes = new MutableLiveData<>();
     private MutableLiveData<List<StockSearchResult>> searchResults = new MutableLiveData<>();
     private MutableLiveData<List<String>> favouriteStocks = new MutableLiveData<>();
+    private MutableLiveData<StockRealTimeData> selectedStock = new MutableLiveData<>();
 
     public static StockRepository getInstance(){
         if(stockRepository == null)
@@ -60,6 +61,14 @@ public class StockRepository {
 
     public String getErrorMessage(){
         return errorMessage;
+    }
+
+    public MutableLiveData<StockRealTimeData> getSelectedStock(){
+        return selectedStock;
+    }
+
+    public void setSelectedStock(StockRealTimeData stock){
+        selectedStock.setValue(stock);
     }
 
     public boolean unfollowStock(Context context, String symbol){

@@ -1,7 +1,9 @@
 package br.com.analisadorb3.fragments;
 
+import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.ViewModelProviders;
 
+import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -12,28 +14,36 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import br.com.analisadorb3.R;
-import br.com.analisadorb3.viewmodel.StockInfoViewModel;
+import br.com.analisadorb3.databinding.StockInfoFragmentBinding;
+import br.com.analisadorb3.viewmodel.StockViewModel;
 
 public class StockInfoFragment extends Fragment {
 
-    private StockInfoViewModel mViewModel;
-
-    public static StockInfoFragment newInstance() {
-        return new StockInfoFragment();
-    }
+    private StockViewModel mViewModel;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.stock_info_fragment, container, false);
+        StockInfoFragmentBinding binding = DataBindingUtil.inflate(inflater,
+                R.layout.stock_info_fragment, container,  false);
+        mViewModel = ViewModelProviders.of(this).get(StockViewModel.class);
+        binding.setViewModel(mViewModel);
+        binding.setLifecycleOwner(this);
+        return binding.getRoot();
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mViewModel = ViewModelProviders.of(this).get(StockInfoViewModel.class);
-        // TODO: Use the ViewModel
+        FloatingActionButton backButton = getView().findViewById(R.id.back_button);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getActivity().onBackPressed();
+            }
+        });
     }
-
 }
