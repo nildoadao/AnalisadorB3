@@ -41,8 +41,7 @@ public class StopFollowDialog extends DialogFragment {
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        SettingsUtil settings = new SettingsUtil(getContext());
-                        if(settings.removeFavouriteStock(symbol)){
+                        if(SettingsUtil.removeFavouriteStock(getActivity().getApplication(),symbol)){
                             Toast.makeText(getContext(), getString(R.string.removed), Toast.LENGTH_SHORT).show();
                             if(listener != null)
                                 listener.onDialogFinish(true, symbol);
