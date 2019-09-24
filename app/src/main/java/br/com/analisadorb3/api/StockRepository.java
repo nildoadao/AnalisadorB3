@@ -5,11 +5,15 @@ import android.text.TextUtils;
 
 import androidx.lifecycle.MutableLiveData;
 
+import org.threeten.bp.LocalDate;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import br.com.analisadorb3.models.HistoricalDataResponse;
 import br.com.analisadorb3.models.RealTimeDataResponse;
-import br.com.analisadorb3.models.StockHistorycalData;
+import br.com.analisadorb3.models.StockHistoricalData;
 import br.com.analisadorb3.models.StockRealTimeData;
 import br.com.analisadorb3.models.StockSearchResponse;
 import br.com.analisadorb3.models.StockSearchResult;
@@ -30,6 +34,7 @@ public class StockRepository {
     private MutableLiveData<List<StockSearchResult>> searchResults = new MutableLiveData<>();
     private MutableLiveData<List<String>> favouriteStocks = new MutableLiveData<>();
     private MutableLiveData<StockRealTimeData> selectedStock = new MutableLiveData<>();
+    private MutableLiveData<List<Map<String, StockHistoricalData>>> dailyData = new MutableLiveData<>();
 
     public static StockRepository getInstance(){
         if(stockRepository == null)
@@ -59,6 +64,10 @@ public class StockRepository {
         return favouriteStocks;
     }
 
+    public MutableLiveData<List<Map<String, StockHistoricalData>>> getDailyData(){
+        return dailyData;
+    }
+
     public String getErrorMessage(){
         return errorMessage;
     }
@@ -69,6 +78,9 @@ public class StockRepository {
 
     public void setSelectedStock(StockRealTimeData stock){
         selectedStock.setValue(stock);
+        LocalDate currentDate = LocalDate.now();
+        LocalDate initDate = currentDate.minusMonths(6);
+        getDailyTimeSeries(stock.getSymbol(), initDate.toString(), currentDate.toString());
     }
 
     public boolean unfollowStock(Context context, String symbol){
@@ -118,24 +130,23 @@ public class StockRepository {
         return lastQuotes;
     }
 
-    public MutableLiveData<List<StockHistorycalData>> getDailyTimeSeries(String symbol, String dateFrom, String dateTo){
+    public MutableLiveData<List<Map<String, StockHistoricalData>>> getDailyTimeSeries(String symbol, String dateFrom, String dateTo){
         refreshing.postValue(true);
-        final MutableLiveData<List<StockHistorycalData>> dailyData = new MutableLiveData<>();
         worldTradingApi.getDailyTimeSeries(symbol, WORLD_TRADING_TOKEN, dateFrom, dateTo)
-                .enqueue(new Callback<List<StockHistorycalData>>() {
+                .enqueue(new Callback<HistoricalDataResponse>() {
                     @Override
-                    public void onResponse(Call<List<StockHistorycalData>> call, Response<List<StockHistorycalData>> response) {
+                    public void onResponse(Call<HistoricalDataResponse> call, Response<HistoricalDataResponse> response) {
                         if(!response.isSuccessful()){
                             dailyData.setValue(null);
                             refreshing.postValue(false);
                             return;
                         }
-                        dailyData.setValue(response.body());
+                        dailyData.setValue(response.body().getHistory());
                         refreshing.postValue(false);
                     }
 
                     @Override
-                    public void onFailure(Call<List<StockHistorycalData>> call, Throwable t) {
+                    public void onFailure(Call<HistoricalDataResponse> call, Throwable t) {
                         dailyData.setValue(null);
                         refreshing.postValue(false);
                     }

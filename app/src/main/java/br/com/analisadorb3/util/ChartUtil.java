@@ -13,28 +13,32 @@ import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.format.DateTimeFormatter;
 
-import br.com.analisadorb3.models.StockHistorycalData;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import br.com.analisadorb3.models.StockHistoricalData;
+import br.com.analisadorb3.models.StockRealTimeData;
 
 public class ChartUtil {
 
-    public static LineData getDayChart(final LineChart chart, List<StockHistorycalData> data){
+    public static LineData getDayChart(final LineChart chart, List<StockRealTimeData> data){
         if(data == null)
             return null;
-        //Collections.sort(data);
+
         ArrayList<Entry> entries = new ArrayList<>();
-        LocalDate currentDate = LocalDate.now();
+        LocalDate lastTradingTime = LocalDate.parse(data.get(0).getLastTradingTime());
 
         for(int i = 0; i < data.size(); i++){
-            StockHistorycalData quote = data.get(i);
-            /*if(quote.getDate().isAfter(currentDate.minusDays(1))){
-                float price = Float.parseFloat(quote.getClose());
+            StockRealTimeData quote = data.get(i);
+            LocalDate quoteDate = LocalDate.parse(quote.getLastTradingTime());
+            if(lastTradingTime == quoteDate){
+                float price = Float.parseFloat(quote.getPrice());
                 entries.add(new Entry(i, price));
-            }*/
+            }
         }
 
         LineDataSet dataSet = new LineDataSet(entries, "Variação diária");
@@ -96,16 +100,16 @@ public class ChartUtil {
         return new LineData(dataSet);
     }
 
-    public static LineData getTreeDayChart(final LineChart chart, final List<StockHistorycalData> data){
+    public static LineData getTreeDayChart(final LineChart chart, final List<StockRealTimeData> data){
         if(data == null)
             return null;
 
         //Collections.sort(data);
         final ArrayList<Entry> entries = new ArrayList<>();
-        LocalDate currentDate = LocalDate.now();
+        //LocalDate currentDate = LocalDate.now();
 
         for(int i = 0; i < data.size(); i++){
-            StockHistorycalData quote = data.get(i);
+            StockRealTimeData quote = data.get(i);
             /*if(quote.getDate().isAfter(currentDate.minusDays(3))){
                 float price = Float.parseFloat(quote.getClose());
                 entries.add(new Entry(i, price));
@@ -174,16 +178,14 @@ public class ChartUtil {
         return new LineData(dataSet);
     }
 
-    public static LineData getSixMonthsChart(final LineChart chart, final List<StockHistorycalData> data){
+    public static LineData getSixMonthsChart(final LineChart chart, final List<Map<String, StockHistoricalData>> data){
         if(data == null)
             return null;
 
-        //Collections.sort(data);
         final ArrayList<Entry> entries = new ArrayList<>();
-        LocalDate currentDate = LocalDate.now();
 
         for(int i = 0 ; i < data.size(); i++){
-            StockHistorycalData quote = data.get(i);
+            //StockHistoricalData quote = data.get(i);
             /*if(quote.getDate().isAfter(currentDate.minusMonths(6))){
                 float price = Float.parseFloat(quote.getClose());
                 entries.add(new Entry(i, price));
@@ -240,16 +242,16 @@ public class ChartUtil {
         return new LineData(dataSet);
     }
 
-    public static LineData getMonthChart(final LineChart chart, final List<StockHistorycalData> data){
+    public static LineData getMonthChart(final LineChart chart, final List<Map<String, StockHistoricalData>> data){
         if(data == null)
             return null;
 
         //Collections.sort(data);
         final ArrayList<Entry> entries = new ArrayList<>();
-        LocalDate currentDate = LocalDate.now();
+        //LocalDate currentDate = LocalDate.now();
 
         for(int i = 0 ; i < data.size(); i++){
-            StockHistorycalData quote = data.get(i);
+            //StockHistoricalData quote = data.get(i);
             /*if(quote.getDate().isAfter(currentDate.minusMonths(1))){
                 float price = Float.parseFloat(quote.getClose());
                 entries.add(new Entry(i, price));
