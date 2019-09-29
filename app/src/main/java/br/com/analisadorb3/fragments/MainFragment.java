@@ -38,7 +38,8 @@ public class MainFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        MainFragmentBinding binding = DataBindingUtil.inflate(inflater, R.layout.main_fragment, container, false);
+        MainFragmentBinding binding = DataBindingUtil.inflate(inflater,
+                R.layout.main_fragment, container, false);
         viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
         return binding.getRoot();
     }

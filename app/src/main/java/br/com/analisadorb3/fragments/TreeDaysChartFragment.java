@@ -11,24 +11,25 @@ import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Description;
 
 import java.util.List;
+import java.util.Map;
 
 import br.com.analisadorb3.R;
-import br.com.analisadorb3.models.StockRealTimeData;
+import br.com.analisadorb3.models.StockIntradayData;
 import br.com.analisadorb3.util.ChartUtil;
 
 public class TreeDaysChartFragment extends Fragment {
 
-    private List<StockRealTimeData> intradayData;
+    private Map<String, StockIntradayData> intradayData;
 
     public TreeDaysChartFragment() {
         // Required empty public constructor
     }
 
-    private void setData(List<StockRealTimeData> data){
+    private void setData(Map<String, StockIntradayData> data){
         intradayData = data;
     }
 
-    public static TreeDaysChartFragment newInstance(List<StockRealTimeData> data){
+    public static TreeDaysChartFragment newInstance(Map<String, StockIntradayData> data){
         TreeDaysChartFragment chart = new TreeDaysChartFragment();
         chart.setData(data);
         return chart;

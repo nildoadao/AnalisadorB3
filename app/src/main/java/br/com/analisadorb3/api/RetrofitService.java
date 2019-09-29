@@ -10,10 +10,16 @@ public class RetrofitService {
             .addConverterFactory(GsonConverterFactory.create())
             .build();
 
-    public static <S> S createService(Class<S> serviceClass, boolean intraDay){
-        if(intraDay)
-            return null;
-        else
-            return basicRetrofit.create(serviceClass);
+    private static Retrofit intradayRetrofit = new Retrofit.Builder()
+            .baseUrl("https://www.alphavantage.co/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build();
+
+    public static <S> S createService(Class<S> serviceClass){
+        return basicRetrofit.create(serviceClass);
+    }
+
+    public static <S> S createIntradayService(Class<S> serviceClass){
+        return intradayRetrofit.create(serviceClass);
     }
 }

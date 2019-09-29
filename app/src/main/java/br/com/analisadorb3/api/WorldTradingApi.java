@@ -16,6 +16,7 @@ public interface WorldTradingApi {
     @GET("history")
     Call<HistoricalDataResponse> getDailyTimeSeries(@Query(value = "symbol", encoded = true) String symbol,
                                                     @Query("api_token") String token,
+                                                    @Query("sort") String sort,
                                                     @Query("date_from") String dateFrom,
                                                     @Query("date_to") String dateTo);
 

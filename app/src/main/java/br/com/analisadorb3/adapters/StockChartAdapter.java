@@ -3,6 +3,7 @@ package br.com.analisadorb3.adapters;
 import android.content.Context;
 
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
@@ -16,24 +17,25 @@ import br.com.analisadorb3.fragments.MonthChartFragment;
 import br.com.analisadorb3.fragments.SixMonthsChartFragment;
 import br.com.analisadorb3.fragments.TreeDaysChartFragment;
 import br.com.analisadorb3.models.StockHistoricalData;
-import br.com.analisadorb3.models.StockRealTimeData;
+import br.com.analisadorb3.models.StockIntradayData;
 
 public class StockChartAdapter extends FragmentStatePagerAdapter {
+
     Context context;
-    List<StockRealTimeData> intraDayData;
-    List<Map<String, StockHistoricalData>> dailyData;
+    Map<String, StockIntradayData> intraDayData;
+    Map<String, StockHistoricalData> dailyData;
 
     public StockChartAdapter(Context context, FragmentManager fragmentManager){
         super(fragmentManager);
         this.context = context;
     }
 
-    public void setIntraDayData(List<StockRealTimeData> data){
+    public void setIntraDayData(Map<String, StockIntradayData> data){
         this.intraDayData = data;
     }
 
-    public void setDailyData(List<Map<String, StockHistoricalData>> data){
-        dailyData = data;
+    public void setDailyData(Map<String, StockHistoricalData> dailyData){
+        this.dailyData = dailyData;
     }
 
     @Override

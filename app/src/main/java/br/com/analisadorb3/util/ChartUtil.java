@@ -13,35 +13,52 @@ import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
-import org.threeten.bp.LocalDate;
-import org.threeten.bp.format.DateTimeFormatter;
-
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import br.com.analisadorb3.models.StockHistoricalData;
-import br.com.analisadorb3.models.StockRealTimeData;
+import br.com.analisadorb3.models.StockIntradayData;
 
 public class ChartUtil {
 
-    public static LineData getDayChart(final LineChart chart, List<StockRealTimeData> data){
+    public static LineData getDayChart(final LineChart chart, final Map<String, StockIntradayData> data){
+
         if(data == null)
             return null;
 
         ArrayList<Entry> entries = new ArrayList<>();
-        LocalDate lastTradingTime = LocalDate.parse(data.get(0).getLastTradingTime());
+        String lastTradingTimeString = "";
 
-        for(int i = 0; i < data.size(); i++){
-            StockRealTimeData quote = data.get(i);
-            LocalDate quoteDate = LocalDate.parse(quote.getLastTradingTime());
-            if(lastTradingTime == quoteDate){
-                float price = Float.parseFloat(quote.getPrice());
+        for(String key : data.keySet()){
+            lastTradingTimeString = key;
+            break;
+        }
+
+        LocalDate lastTradingTime = LocalDate.parse(lastTradingTimeString, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        int i = 0;
+        for(String key : data.keySet()){
+            StockIntradayData quote = data.get(key);
+            LocalDate quoteDate = LocalDate.parse(key, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+            if(quoteDate.getDayOfYear() == lastTradingTime.getDayOfYear()){
+                float price = Float.parseFloat(quote.getClose());
                 entries.add(new Entry(i, price));
+                i++;
+            }
+            else {
+                break;
             }
         }
 
-        LineDataSet dataSet = new LineDataSet(entries, "Variação diária");
+        ArrayList<Entry> reverseEntries = new ArrayList<>();
+        for(int j = entries.size() - 1; j >= 0; j--){
+            reverseEntries.add(new Entry(reverseEntries.size(), entries.get(j).getY()));
+        }
+
+        LineDataSet dataSet = new LineDataSet(reverseEntries, "Variação diária");
         dataSet.setColor(Color.argb(255, 0, 0, 127));
         dataSet.setValueTextColor(Color.argb(255,0,0,127));
         dataSet.setDrawCircles(false);
@@ -64,23 +81,23 @@ public class ChartUtil {
             @Override
             public String getFormattedValue(float value) {
                 if(value == 0)
-                    return "9h";
-                else if(value == 60)
                     return "10h";
-                else if(value == 120)
+                else if(value == 60)
                     return "11h";
-                else if(value == 180)
+                else if(value == 120)
                     return "12h";
-                else if(value == 240)
+                else if(value == 180)
                     return "13h";
-                else if(value == 300)
+                else if(value == 240)
                     return "14h";
-                else if(value == 360)
+                else if(value == 300)
                     return "15h";
-                else if(value == 420)
+                else if(value == 360)
                     return "16h";
-                else if(value == 480)
+                else if(value == 420)
                     return "17h";
+                else if(value == 480)
+                    return "18h";
                 else
                     return "";
             }
@@ -100,7 +117,7 @@ public class ChartUtil {
         return new LineData(dataSet);
     }
 
-    public static LineData getTreeDayChart(final LineChart chart, final List<StockRealTimeData> data){
+    public static LineData getTreeDayChart(final LineChart chart, Map<String, StockIntradayData> data){
         if(data == null)
             return null;
 
@@ -109,7 +126,7 @@ public class ChartUtil {
         //LocalDate currentDate = LocalDate.now();
 
         for(int i = 0; i < data.size(); i++){
-            StockRealTimeData quote = data.get(i);
+            //StockRealTimeData quote = data.get(i);
             /*if(quote.getDate().isAfter(currentDate.minusDays(3))){
                 float price = Float.parseFloat(quote.getClose());
                 entries.add(new Entry(i, price));
@@ -178,7 +195,7 @@ public class ChartUtil {
         return new LineData(dataSet);
     }
 
-    public static LineData getSixMonthsChart(final LineChart chart, final List<Map<String, StockHistoricalData>> data){
+    public static LineData getSixMonthsChart(final LineChart chart, final Map<String, StockHistoricalData> data){
         if(data == null)
             return null;
 
@@ -242,7 +259,7 @@ public class ChartUtil {
         return new LineData(dataSet);
     }
 
-    public static LineData getMonthChart(final LineChart chart, final List<Map<String, StockHistoricalData>> data){
+    public static LineData getMonthChart(final LineChart chart, final Map<String, StockHistoricalData> data){
         if(data == null)
             return null;
 

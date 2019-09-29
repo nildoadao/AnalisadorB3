@@ -26,4 +26,24 @@ public class StockHistoricalData {
     public String getVolume() {
         return volume;
     }
+
+    public void setOpen(String open) {
+        this.open = open;
+    }
+
+    public void setClose(String close) {
+        this.close = close;
+    }
+
+    public void setHigh(String high) {
+        this.high = high;
+    }
+
+    public void setLow(String low) {
+        this.low = low;
+    }
+
+    public void setVolume(String volume) {
+        this.volume = volume;
+    }
 }

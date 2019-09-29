@@ -7,12 +7,18 @@ import android.graphics.Color;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import br.com.analisadorb3.api.StockRepository;
-import br.com.analisadorb3.logic.StockCalculator;
+import br.com.analisadorb3.models.StockHistoricalData;
+import br.com.analisadorb3.models.StockIntradayData;
 import br.com.analisadorb3.models.StockRealTimeData;
 import br.com.analisadorb3.models.StockSearchResult;
+import br.com.analisadorb3.util.StockUtil;
 
 public class StockViewModel extends AndroidViewModel {
 
@@ -25,6 +31,14 @@ public class StockViewModel extends AndroidViewModel {
 
     public MutableLiveData<Boolean> isSearching(){
         return repository.isRefreshing();
+    }
+
+    public MutableLiveData<Map<String, StockIntradayData>> getIntradayData(){
+        return repository.getIntradayData();
+    }
+
+    public MutableLiveData<Map<String, StockHistoricalData>> getDailyData() {
+        return repository.getDailyData();
     }
 
     public MutableLiveData<List<StockSearchResult>> getSearchResult(){
@@ -73,7 +87,7 @@ public class StockViewModel extends AndroidViewModel {
         catch (Exception e){
             volume = 0d;
         }
-        return StockCalculator.doublePrettify(volume);
+        return StockUtil.doublePrettify(volume);
     }
 
     public String getChangeText(){
@@ -101,5 +115,10 @@ public class StockViewModel extends AndroidViewModel {
             return Color.GREEN;
         else
             return Color.RED;
+    }
+
+    public String getThreeMonthsVariation(){
+        Double averageChange = StockUtil.getAverageVariation(repository.getDailyData().getValue(), 6);
+        return String.format("%.2f", averageChange);
     }
 }

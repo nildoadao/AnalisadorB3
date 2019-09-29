@@ -5,15 +5,17 @@ import android.text.TextUtils;
 
 import androidx.lifecycle.MutableLiveData;
 
-import org.threeten.bp.LocalDate;
-
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import br.com.analisadorb3.models.HistoricalDataResponse;
+import br.com.analisadorb3.models.IntradayDataResponse;
 import br.com.analisadorb3.models.RealTimeDataResponse;
 import br.com.analisadorb3.models.StockHistoricalData;
+import br.com.analisadorb3.models.StockIntradayData;
 import br.com.analisadorb3.models.StockRealTimeData;
 import br.com.analisadorb3.models.StockSearchResponse;
 import br.com.analisadorb3.models.StockSearchResult;
@@ -25,16 +27,19 @@ import retrofit2.Response;
 public class StockRepository {
 
     private final String WORLD_TRADING_TOKEN = "rwNhIENB5s0xpmzAOzBmyBBW944f8uoBUHkT7qEwVsKRXrzFRmLqpFDEo8Eq";
+    private final String ALPHAVANTAGE_API_KEY = "XC5MVLREL74KNLOR";
 
     private static StockRepository stockRepository;
     private WorldTradingApi worldTradingApi;
+    private AlphaVantageAPI alphaVantageAPI;
     private String errorMessage;
     private MutableLiveData<Boolean> refreshing = new MutableLiveData<>();
     private MutableLiveData<List<StockRealTimeData>> lastQuotes = new MutableLiveData<>();
     private MutableLiveData<List<StockSearchResult>> searchResults = new MutableLiveData<>();
     private MutableLiveData<List<String>> favouriteStocks = new MutableLiveData<>();
     private MutableLiveData<StockRealTimeData> selectedStock = new MutableLiveData<>();
-    private MutableLiveData<List<Map<String, StockHistoricalData>>> dailyData = new MutableLiveData<>();
+    private MutableLiveData<Map<String, StockHistoricalData>> dailyData = new MutableLiveData<>();
+    private MutableLiveData<Map<String, StockIntradayData>> intradayData = new MutableLiveData<>();
 
     public static StockRepository getInstance(){
         if(stockRepository == null)
@@ -44,7 +49,8 @@ public class StockRepository {
     }
 
     public StockRepository(){
-        worldTradingApi = RetrofitService.createService(WorldTradingApi.class, false);
+        worldTradingApi = RetrofitService.createService(WorldTradingApi.class);
+        alphaVantageAPI = RetrofitService.createIntradayService(AlphaVantageAPI.class);
         refreshing.setValue(false);
     }
 
@@ -64,8 +70,12 @@ public class StockRepository {
         return favouriteStocks;
     }
 
-    public MutableLiveData<List<Map<String, StockHistoricalData>>> getDailyData(){
+    public MutableLiveData<Map<String, StockHistoricalData>> getDailyData(){
         return dailyData;
+    }
+
+    public MutableLiveData<Map<String, StockIntradayData>> getIntradayData(){
+        return intradayData;
     }
 
     public String getErrorMessage(){
@@ -81,6 +91,7 @@ public class StockRepository {
         LocalDate currentDate = LocalDate.now();
         LocalDate initDate = currentDate.minusMonths(6);
         getDailyTimeSeries(stock.getSymbol(), initDate.toString(), currentDate.toString());
+        getIntradayTimeSeries(stock.getSymbol());
     }
 
     public boolean unfollowStock(Context context, String symbol){
@@ -130,9 +141,9 @@ public class StockRepository {
         return lastQuotes;
     }
 
-    public MutableLiveData<List<Map<String, StockHistoricalData>>> getDailyTimeSeries(String symbol, String dateFrom, String dateTo){
+    public MutableLiveData<Map<String, StockHistoricalData>> getDailyTimeSeries(String symbol, String dateFrom, String dateTo){
         refreshing.postValue(true);
-        worldTradingApi.getDailyTimeSeries(symbol, WORLD_TRADING_TOKEN, dateFrom, dateTo)
+        worldTradingApi.getDailyTimeSeries(symbol, WORLD_TRADING_TOKEN, "newest", dateFrom, dateTo)
                 .enqueue(new Callback<HistoricalDataResponse>() {
                     @Override
                     public void onResponse(Call<HistoricalDataResponse> call, Response<HistoricalDataResponse> response) {
@@ -176,5 +187,26 @@ public class StockRepository {
                     }
                 });
         return searchResults;
+    }
+
+    public MutableLiveData<Map<String, StockIntradayData>> getIntradayTimeSeries(String symbol){
+        refreshing.postValue(true);
+        alphaVantageAPI.getIntradayData("TIME_SERIES_INTRADAY", "1min",
+                symbol, ALPHAVANTAGE_API_KEY, "full")
+                .enqueue(new Callback<IntradayDataResponse>(){
+                    @Override
+                    public void onFailure(Call<IntradayDataResponse> call, Throwable t) {
+                        intradayData.postValue(null);
+                        refreshing.postValue(false);
+                        return;
+                    }
+
+                    @Override
+                    public void onResponse(Call<IntradayDataResponse> call, Response<IntradayDataResponse> response) {
+                        intradayData.postValue(response.body().getTimeSeries());
+                        refreshing.postValue(false);
+                    }
+                });
+        return intradayData;
     }
 }
