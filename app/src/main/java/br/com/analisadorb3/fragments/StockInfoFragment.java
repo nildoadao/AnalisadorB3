@@ -4,12 +4,12 @@ import androidx.databinding.DataBindingUtil;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
-import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewpager.widget.ViewPager;
 
 import android.view.LayoutInflater;
@@ -20,21 +20,20 @@ import android.widget.TextView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import br.com.analisadorb3.R;
 import br.com.analisadorb3.adapters.StockChartAdapter;
 import br.com.analisadorb3.databinding.StockInfoFragmentBinding;
 import br.com.analisadorb3.models.StockHistoricalData;
-import br.com.analisadorb3.models.StockIntradayData;
-import br.com.analisadorb3.util.StockUtil;
+import br.com.analisadorb3.models.StockIntraDayData;
+import br.com.analisadorb3.models.StockRealTimeData;
 import br.com.analisadorb3.viewmodel.StockViewModel;
 
 public class StockInfoFragment extends Fragment {
 
     private StockViewModel mViewModel;
+    private StockChartAdapter chartAdapter;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -49,6 +48,12 @@ public class StockInfoFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        ViewPager viewPager = getView().findViewById(R.id.chart_view_pager);
+        chartAdapter = new StockChartAdapter(getContext(), getFragmentManager());
+        viewPager.setAdapter(chartAdapter);
+        TabLayout tabLayout = getView().findViewById(R.id.chart_tab);
+        tabLayout.setupWithViewPager(viewPager);
         FloatingActionButton backButton = getView().findViewById(R.id.back_button);
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -56,26 +61,46 @@ public class StockInfoFragment extends Fragment {
                 getActivity().onBackPressed();
             }
         });
-        ViewPager viewPager = getView().findViewById(R.id.chart_view_pager);
-        final StockChartAdapter adapter = new StockChartAdapter(getContext(), getFragmentManager());
-        viewPager.setAdapter(adapter);
-        TabLayout tabLayout = getView().findViewById(R.id.chart_tab);
-        tabLayout.setupWithViewPager(viewPager);
-        final TextView averageVariationText = getView().findViewById(R.id.day_change_average_3_value);
 
-        mViewModel.getIntradayData().observe(this, new Observer<Map<String, StockIntradayData>>() {
+        mViewModel.getSelectedStock().observe(this, new Observer<StockRealTimeData>() {
             @Override
-            public void onChanged(Map<String, StockIntradayData> stringStockIntradayDataMap) {
-                adapter.setIntraDayData(stringStockIntradayDataMap);
+            public void onChanged(StockRealTimeData stockRealTimeData) {
+                mViewModel.updateData();
             }
         });
 
+        mViewModel.getIntradayData().observe(this, new Observer<Map<String, StockIntraDayData>>() {
+            @Override
+            public void onChanged(Map<String, StockIntraDayData> stringStockIntraDayDataMap) {
+                chartAdapter.setIntraDayData(stringStockIntraDayDataMap);
+                chartAdapter.setStatus(mViewModel.getStockStatus());
+            }
+        });
+
+        final TextView averageVariationText = getView().findViewById(R.id.day_change_average_3_value);
         mViewModel.getDailyData().observe(this, new Observer<Map<String, StockHistoricalData>>() {
             @Override
             public void onChanged(Map<String, StockHistoricalData> maps) {
                 averageVariationText.setText(mViewModel.getThreeMonthsVariation());
-                adapter.setDailyData(maps);
+                chartAdapter.setDailyData(maps);
+                chartAdapter.setStatus(mViewModel.getStockStatus());
+            }
+        });
+
+        final SwipeRefreshLayout refreshLayout = getView().findViewById(R.id.refresh_layout);
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                mViewModel.setSelectedStock(mViewModel.getSelectedStock().getValue());
+            }
+        });
+
+        mViewModel.isSearching().observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                refreshLayout.setRefreshing(aBoolean);
             }
         });
     }
+
 }

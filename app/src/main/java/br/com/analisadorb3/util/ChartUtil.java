@@ -16,15 +16,14 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import br.com.analisadorb3.models.StockHistoricalData;
-import br.com.analisadorb3.models.StockIntradayData;
+import br.com.analisadorb3.models.StockIntraDayData;
 
 public class ChartUtil {
 
-    public static LineData getDayChart(final LineChart chart, final Map<String, StockIntradayData> data){
+    public static LineData getDayChart(final LineChart chart, final Map<String, StockIntraDayData> data, StockChangeStatus status){
 
         if(data == null)
             return null;
@@ -40,7 +39,7 @@ public class ChartUtil {
         LocalDate lastTradingTime = LocalDate.parse(lastTradingTimeString, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         int i = 0;
         for(String key : data.keySet()){
-            StockIntradayData quote = data.get(key);
+            StockIntraDayData quote = data.get(key);
             LocalDate quoteDate = LocalDate.parse(key, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
             if(quoteDate.getDayOfYear() == lastTradingTime.getDayOfYear()){
@@ -59,8 +58,18 @@ public class ChartUtil {
         }
 
         LineDataSet dataSet = new LineDataSet(reverseEntries, "Variação diária");
-        dataSet.setColor(Color.argb(255, 0, 0, 127));
-        dataSet.setValueTextColor(Color.argb(255,0,0,127));
+
+        if(status == StockChangeStatus.VALUE_UP){
+            dataSet.setColor(Color.argb(255, 0, 127, 0));
+            dataSet.setValueTextColor(Color.argb(255, 0, 127, 0));
+            dataSet.setFillColor(Color.argb(255, 0,127,0));
+        }
+        else{
+            dataSet.setColor(Color.argb(255, 127, 0, 0));
+            dataSet.setValueTextColor(Color.argb(255, 127, 0, 0));
+            dataSet.setFillColor(Color.argb(255, 127,0,0));
+        }
+
         dataSet.setDrawCircles(false);
         dataSet.setDrawCircleHole(false);
         dataSet.setDrawFilled(true);
@@ -70,7 +79,7 @@ public class ChartUtil {
                 return chart.getAxisLeft().getAxisMinimum();
             }
         });
-        dataSet.setFillColor(Color.argb(255, 183,242,255));
+
         //****
         // Controlling X axis
         XAxis xAxis = chart.getXAxis();
@@ -117,7 +126,7 @@ public class ChartUtil {
         return new LineData(dataSet);
     }
 
-    public static LineData getTreeDayChart(final LineChart chart, Map<String, StockIntradayData> data){
+    public static LineData getTreeDayChart(final LineChart chart, Map<String, StockIntraDayData> data){
         if(data == null)
             return null;
 

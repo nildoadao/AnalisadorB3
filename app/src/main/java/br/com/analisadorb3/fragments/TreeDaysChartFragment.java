@@ -10,28 +10,34 @@ import androidx.fragment.app.Fragment;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Description;
 
-import java.util.List;
 import java.util.Map;
 
 import br.com.analisadorb3.R;
-import br.com.analisadorb3.models.StockIntradayData;
+import br.com.analisadorb3.models.StockIntraDayData;
 import br.com.analisadorb3.util.ChartUtil;
+import br.com.analisadorb3.util.StockChangeStatus;
 
 public class TreeDaysChartFragment extends Fragment {
 
-    private Map<String, StockIntradayData> intradayData;
+    private Map<String, StockIntraDayData> intraDayData;
+    StockChangeStatus status;
 
     public TreeDaysChartFragment() {
         // Required empty public constructor
     }
 
-    private void setData(Map<String, StockIntradayData> data){
-        intradayData = data;
+    private void setData(Map<String, StockIntraDayData> data){
+        intraDayData = data;
     }
 
-    public static TreeDaysChartFragment newInstance(Map<String, StockIntradayData> data){
+    private void setStatus(StockChangeStatus status){
+        this.status = status;
+    }
+
+    public static TreeDaysChartFragment newInstance(Map<String, StockIntraDayData> data, StockChangeStatus status){
         TreeDaysChartFragment chart = new TreeDaysChartFragment();
         chart.setData(data);
+        chart.setStatus(status);
         return chart;
     }
 
@@ -44,7 +50,7 @@ public class TreeDaysChartFragment extends Fragment {
         description.setText("");
         chart.setDescription(description);
         chart.setNoDataText("Nenhum dado disponível");
-        chart.setData(ChartUtil.getTreeDayChart(chart, intradayData));
+        chart.setData(ChartUtil.getTreeDayChart(chart, intraDayData));
         chart.animateX(2500);
         chart.invalidate();
         return view;

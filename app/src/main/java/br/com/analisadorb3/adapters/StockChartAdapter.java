@@ -3,12 +3,10 @@ package br.com.analisadorb3.adapters;
 import android.content.Context;
 
 import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 
-import java.util.List;
 import java.util.Map;
 
 import br.com.analisadorb3.R;
@@ -17,20 +15,22 @@ import br.com.analisadorb3.fragments.MonthChartFragment;
 import br.com.analisadorb3.fragments.SixMonthsChartFragment;
 import br.com.analisadorb3.fragments.TreeDaysChartFragment;
 import br.com.analisadorb3.models.StockHistoricalData;
-import br.com.analisadorb3.models.StockIntradayData;
+import br.com.analisadorb3.models.StockIntraDayData;
+import br.com.analisadorb3.util.StockChangeStatus;
 
 public class StockChartAdapter extends FragmentStatePagerAdapter {
 
     Context context;
-    Map<String, StockIntradayData> intraDayData;
+    Map<String, StockIntraDayData> intraDayData;
     Map<String, StockHistoricalData> dailyData;
+    StockChangeStatus status;
 
     public StockChartAdapter(Context context, FragmentManager fragmentManager){
         super(fragmentManager);
         this.context = context;
     }
 
-    public void setIntraDayData(Map<String, StockIntradayData> data){
+    public void setIntraDayData(Map<String, StockIntraDayData> data){
         this.intraDayData = data;
     }
 
@@ -38,16 +38,20 @@ public class StockChartAdapter extends FragmentStatePagerAdapter {
         this.dailyData = dailyData;
     }
 
+    public void setStatus(StockChangeStatus status){
+        this.status = status;
+    }
+
     @Override
     public Fragment getItem(int position) {
         if(position == 0)
-            return DayChartFragment.newInstance(intraDayData);
+            return DayChartFragment.newInstance(intraDayData, status);
         else if(position == 1)
-            return TreeDaysChartFragment.newInstance(intraDayData);
+            return TreeDaysChartFragment.newInstance(intraDayData, status);
         else if(position == 2)
-            return MonthChartFragment.newInstance(dailyData);
+            return MonthChartFragment.newInstance(dailyData, status);
         else
-            return SixMonthsChartFragment.newInstance(dailyData);
+            return SixMonthsChartFragment.newInstance(dailyData, status);
     }
 
     @Override

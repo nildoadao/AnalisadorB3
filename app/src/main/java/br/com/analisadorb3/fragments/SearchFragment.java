@@ -7,6 +7,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -64,6 +65,14 @@ public class SearchFragment extends Fragment {
                     else
                         Toast.makeText(getActivity().getApplication(), getText(R.string.stocks_saved_limit), Toast.LENGTH_LONG).show();
                 }
+            }
+        });
+
+        adapter.setOnItemClickListener(new StockSearchAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(StockSearchResult stock) {
+                viewModel.setSelectedStock(stock.getSymbol());
+                Navigation.findNavController(getView()).navigate(R.id.stockInfoFragment);
             }
         });
 
