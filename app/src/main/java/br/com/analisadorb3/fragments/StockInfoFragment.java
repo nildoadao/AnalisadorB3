@@ -65,11 +65,11 @@ public class StockInfoFragment extends Fragment {
         mViewModel.getSelectedStock().observe(this, new Observer<StockRealTimeData>() {
             @Override
             public void onChanged(StockRealTimeData stockRealTimeData) {
-                mViewModel.updateData();
+                mViewModel.fetchData();
             }
         });
 
-        mViewModel.getIntradayData().observe(this, new Observer<Map<String, StockIntraDayData>>() {
+        mViewModel.getIntraDayData().observe(this, new Observer<Map<String, StockIntraDayData>>() {
             @Override
             public void onChanged(Map<String, StockIntraDayData> stringStockIntraDayDataMap) {
                 chartAdapter.setIntraDayData(stringStockIntraDayDataMap);
@@ -101,6 +101,9 @@ public class StockInfoFragment extends Fragment {
                 refreshLayout.setRefreshing(aBoolean);
             }
         });
+
+        if(savedInstanceState == null)
+            mViewModel.fetchData();
     }
 
 }

@@ -55,7 +55,7 @@ public class MainFragment extends Fragment {
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                viewModel.updateStocks(getActivity().getApplication());
+                viewModel.updateStocks();
             }
         });
 
@@ -103,7 +103,7 @@ public class MainFragment extends Fragment {
             }
         });
         if(savedInstanceState == null){
-            viewModel.updateStocks(getActivity().getApplication());
+            viewModel.updateStocks();
         }
     }
 }

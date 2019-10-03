@@ -90,7 +90,7 @@ public class SearchFragment extends Fragment {
             }
         });
 
-        viewModel.getSearchResult().observe(this, new Observer<List<StockSearchResult>>() {
+        viewModel.getSearchResults().observe(this, new Observer<List<StockSearchResult>>() {
             @Override
             public void onChanged(List<StockSearchResult> stockSearchResults) {
                 adapter.submitList(stockSearchResults);

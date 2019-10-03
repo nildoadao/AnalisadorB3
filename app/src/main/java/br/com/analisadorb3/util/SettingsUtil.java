@@ -1,6 +1,9 @@
 package br.com.analisadorb3.util;
 import android.content.Context;
 import android.content.SharedPreferences;
+
+import androidx.constraintlayout.widget.ConstraintLayout;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.util.ArrayList;
@@ -11,6 +14,22 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class SettingsUtil {
 
     public static final String SAVED_STOCKS = "SavedStocks";
+    public static final String SELECTED_SYMBOL = "SelectedSymbol";
+
+    public static String getSelectedSymbol(Context context){
+        SharedPreferences settings = context.getSharedPreferences(SELECTED_SYMBOL, 0);
+        return settings.getString("selectedSymbol", "");
+    }
+
+    public static boolean setSelectedSymbol(Context context, String symbol){
+        if(symbol == null || symbol.isEmpty())
+            return false;
+
+        SharedPreferences settings = context.getSharedPreferences(SELECTED_SYMBOL, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString("selectedSymbol", symbol);
+        return editor.commit();
+    }
 
     public static List<String> getFavouriteStocks(Context context){
         SharedPreferences settings = context.getSharedPreferences(SAVED_STOCKS, 0);
@@ -45,9 +64,7 @@ public class SettingsUtil {
         SharedPreferences settings = context.getSharedPreferences(SAVED_STOCKS, 0);
         SharedPreferences.Editor editor = settings.edit();
         editor.putString("favouriteStocks", json);
-        editor.commit();
-
-        return true;
+        return editor.commit();
     }
 
     public static boolean removeFavouriteStock(Context context, String stock){
@@ -64,9 +81,7 @@ public class SettingsUtil {
         SharedPreferences settings = context.getSharedPreferences(SAVED_STOCKS, 0);
         SharedPreferences.Editor editor = settings.edit();
         editor.putString("favouriteStocks", json);
-        editor.commit();
-
-        return true;
-
+        return editor.commit();
     }
+
 }

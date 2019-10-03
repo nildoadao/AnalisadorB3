@@ -15,6 +15,7 @@ import br.com.analisadorb3.util.SettingsUtil;
 public class MainViewModel extends AndroidViewModel {
 
     private StockRepository repository;
+    private MutableLiveData<List<StockRealTimeData>> savedStocks = new MutableLiveData<>();
 
     public MainViewModel(@NonNull Application application) {
         super(application);
@@ -30,14 +31,14 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public MutableLiveData<List<StockRealTimeData>> getSavedStocks(){
-        return repository.getLastQuotes();
+        return savedStocks;
     }
 
-    public void updateStocks(Context context){
-        repository.getLastQuote(SettingsUtil.getFavouriteStocks(context));
+    public void updateStocks(){
+        savedStocks.postValue(repository.getLastQuote(SettingsUtil.getFavouriteStocks(getApplication())));
     }
 
     public void setSelectedStock(StockRealTimeData stock){
-        repository.setSelectedStock(stock);
+        SettingsUtil.setSelectedSymbol(getApplication(), stock.getSymbol());
     }
 }
