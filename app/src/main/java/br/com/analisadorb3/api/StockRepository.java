@@ -32,6 +32,31 @@ public class StockRepository {
     private WorldTradingApi worldTradingApi;
     private AlphaVantageAPI alphaVantageAPI;
     private MutableLiveData<Boolean> refreshing = new MutableLiveData<>();
+    private MutableLiveData<List<StockSearchResult>> searchResults = new MutableLiveData<>();
+    private MutableLiveData<List<String>> favouriteStocks = new MutableLiveData<>();
+    private MutableLiveData<StockRealTimeData> selectedStock = new MutableLiveData<>();
+    private MutableLiveData<Map<String, StockHistoricalData>> dailyData = new MutableLiveData<>();
+    private MutableLiveData<Map<String, StockIntraDayData>> intraDayData = new MutableLiveData<>();
+
+    public MutableLiveData<List<StockSearchResult>> getSearchResults() {
+        return searchResults;
+    }
+
+    public MutableLiveData<List<String>> getFavouriteStocks() {
+        return favouriteStocks;
+    }
+
+    public MutableLiveData<StockRealTimeData> getSelectedStock() {
+        return selectedStock;
+    }
+
+    public MutableLiveData<Map<String, StockHistoricalData>> getDailyData() {
+        return dailyData;
+    }
+
+    public MutableLiveData<Map<String, StockIntraDayData>> getIntraDayData() {
+        return intraDayData;
+    }
 
     public static StockRepository getInstance(){
         if(stockRepository == null)
@@ -58,6 +83,10 @@ public class StockRepository {
         return SettingsUtil.saveFavouriteStock(context, symbol);
     }
 
+    public void loadSelectedStock(String symbol){
+        getLastQuote(symbol);
+    }
+
     public List<StockRealTimeData> getLastQuote(List<String> symbols){
         return getLastQuote(TextUtils.join(",", symbols));
     }
@@ -71,17 +100,20 @@ public class StockRepository {
                     public void onResponse(Call<RealTimeDataResponse> call, Response<RealTimeDataResponse> response) {
                         if(!response.isSuccessful()){
                             refreshing.setValue(false);
+                            selectedStock.postValue(null);
                             return;
                         }
                         for(StockRealTimeData data : response.body().getData()){
                             stocks.add(data);
                         }
+                        selectedStock.postValue(response.body().getData().get(0));
                         refreshing.setValue(false);
                     }
 
                     @Override
                     public void onFailure(Call<RealTimeDataResponse> call, Throwable t) {
                         // TODO handle errors
+                        selectedStock.postValue(null);
                         refreshing.setValue(false);
                     }
                 });
@@ -96,15 +128,18 @@ public class StockRepository {
                     @Override
                     public void onResponse(Call<HistoricalDataResponse> call, Response<HistoricalDataResponse> response) {
                         if(!response.isSuccessful()){
+                            dailyData.postValue(null);
                             return;
                         }
                         for(String key : response.body().getHistory().keySet()){
                             history.put(key, response.body().getHistory().get(key));
                         }
+                        dailyData.postValue(response.body().getHistory());
                     }
 
                     @Override
                     public void onFailure(Call<HistoricalDataResponse> call, Throwable t) {
+                        dailyData.postValue(null);
                         // TODO handle errors
                     }
                 });
@@ -120,17 +155,20 @@ public class StockRepository {
                     public void onResponse(Call<StockSearchResponse> call, Response<StockSearchResponse> response) {
                         if(!response.isSuccessful()){
                             refreshing.setValue(false);
+                            searchResults.postValue(null);
                             return;
                         }
                         for(StockSearchResult result : response.body().getData()){
                             results.add(result);
                         }
+                        searchResults.postValue(response.body().getData());
                         refreshing.setValue(false);
                     }
 
                     @Override
                     public void onFailure(Call<StockSearchResponse> call, Throwable t) {
                         // TODO handle errors
+                        searchResults.postValue(null);
                         refreshing.setValue(false);
                     }
                 });
@@ -146,6 +184,7 @@ public class StockRepository {
                     @Override
                     public void onFailure(Call<IntradayDataResponse> call, Throwable t) {
                         // TODO handle errors
+                        intraDayData.postValue(null);
                         refreshing.setValue(false);
                     }
 
@@ -153,11 +192,13 @@ public class StockRepository {
                     public void onResponse(Call<IntradayDataResponse> call, Response<IntradayDataResponse> response) {
                         if(!response.isSuccessful()){
                             refreshing.setValue(false);
+                            intraDayData.postValue(null);
                             return;
                         }
                         for(String key : response.body().getTimeSeries().keySet()){
                             stocks.put(key, response.body().getTimeSeries().get(key));
                         }
+                        intraDayData.postValue(response.body().getTimeSeries());
                         refreshing.setValue(false);
                     }
                 });

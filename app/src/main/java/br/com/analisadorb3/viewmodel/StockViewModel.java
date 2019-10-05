@@ -5,14 +5,13 @@ import android.content.Context;
 import android.graphics.Color;
 
 import androidx.annotation.NonNull;
+import androidx.databinding.ObservableField;
 import androidx.lifecycle.AndroidViewModel;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import br.com.analisadorb3.api.StockRepository;
 import br.com.analisadorb3.models.StockHistoricalData;
@@ -26,16 +25,15 @@ import br.com.analisadorb3.util.StockUtil;
 public class StockViewModel extends AndroidViewModel {
 
     private StockRepository repository;
-    private MutableLiveData<String> stockSymbol = new MutableLiveData<>();
-    private MutableLiveData<String> stockCompany = new MutableLiveData<>();
-    private MutableLiveData<String> stockPrice = new MutableLiveData<>();
-    private MutableLiveData<Boolean> refreshing = new MutableLiveData<>();
-    private MutableLiveData<List<StockRealTimeData>> lastQuotes = new MutableLiveData<>();
-    private MutableLiveData<List<StockSearchResult>> searchResults = new MutableLiveData<>();
-    private MutableLiveData<List<String>> favouriteStocks = new MutableLiveData<>();
-    private MutableLiveData<StockRealTimeData> selectedStock = new MutableLiveData<>();
-    private MutableLiveData<Map<String, StockHistoricalData>> dailyData = new MutableLiveData<>();
-    private MutableLiveData<Map<String, StockIntraDayData>> intraDayData = new MutableLiveData<>();
+    private ObservableField<String> stockSymbol = new ObservableField<>();
+    private ObservableField<String> stockCompany = new ObservableField<>();
+    private ObservableField<String> stockPrice = new ObservableField<>();
+    private ObservableField<String> lastClose = new ObservableField<>();
+    private ObservableField<String> open = new ObservableField<>();
+    private ObservableField<String> low = new ObservableField<>();
+    private ObservableField<String> high = new ObservableField<>();
+    private ObservableField<String> volume = new ObservableField<>();
+    private ObservableField<String> threeMonthsAverageChange = new ObservableField<>();
 
     public StockViewModel(@NonNull Application application) {
         super(application);
@@ -47,37 +45,60 @@ public class StockViewModel extends AndroidViewModel {
     }
 
     public MutableLiveData<Map<String, StockIntraDayData>> getIntraDayData(){
-        return intraDayData;
+        return repository.getIntraDayData();
     }
 
     public MutableLiveData<Map<String, StockHistoricalData>> getDailyData() {
-        return dailyData;
+        return repository.getDailyData();
     }
 
     public MutableLiveData<List<StockSearchResult>> getSearchResults(){
-        return searchResults;
+        return repository.getSearchResults();
     }
 
     public MutableLiveData<List<String>> getFavouriteStocks(){
-        return favouriteStocks;
+        return repository.getFavouriteStocks();
     }
 
     public MutableLiveData<StockRealTimeData> getSelectedStock(){
-        return selectedStock;
+        return repository.getSelectedStock();
     }
 
-    public MutableLiveData<String> getStockSymbol() {
+    public ObservableField<String> getLastClose() {
+        return lastClose;
+    }
+
+    public ObservableField<String> getOpen() {
+        return open;
+    }
+
+    public ObservableField<String> getLow() {
+        return low;
+    }
+
+    public ObservableField<String> getHigh() {
+        return high;
+    }
+
+    public ObservableField<String> getVolume(){
+        return volume;
+    }
+
+    public ObservableField<String> getThreeMonthsAverageChange() {
+        return threeMonthsAverageChange;
+    }
+
+    public ObservableField<String> getStockSymbol() {
         return stockSymbol;
     }
 
-    public MutableLiveData<String> getStockCompany() {
+    public ObservableField<String> getStockCompany() {
         return stockCompany;
     }
 
-    public MutableLiveData<String> getStockPrice() {
+    public ObservableField<String> getStockPrice() {
         return stockPrice;
     }
-
 
     public boolean followStock(Context context, String symbol){
         return repository.followStock(context, symbol);
@@ -87,28 +108,35 @@ public class StockViewModel extends AndroidViewModel {
         return repository.unfollowStock(context, symbol);
     }
 
-    public void setSelectedStock(StockRealTimeData stock){
-        selectedStock.postValue(stock);
-    }
-
     public void setSelectedStock(String symbol){
-        List<StockRealTimeData> results = repository.getLastQuote(symbol);
-        if(results.size() > 0)
-            setSelectedStock(results.get(0));
+        SettingsUtil.setSelectedSymbol(getApplication(), symbol);
+        repository.loadSelectedStock(symbol);
     }
 
     public void search(String searchTerm){
-        searchResults.postValue(repository.searchStock(searchTerm));
+        repository.searchStock(searchTerm);
+    }
+
+    public void updateView(){
+        stockSymbol.set(getSelectedStock().getValue().getSymbol());
+        stockCompany.set(getSelectedStock().getValue().getName());
+        stockPrice.set(getPrice());
+        lastClose.set(getSelectedStock().getValue().getCloseYesterday());
+        open.set(getSelectedStock().getValue().getPriceOpen());
+        low.set(getSelectedStock().getValue().getDayLow());
+        high.set(getSelectedStock().getValue().getDayHigh());
+        volume.set(getVolumeText());
+        threeMonthsAverageChange.set(getThreeMonthsVariation());
     }
 
     public void fetchData(){
         String selectedSymbol = SettingsUtil.getSelectedSymbol(getApplication());
-        setSelectedStock(selectedSymbol);
-        lastQuotes.postValue(repository.getLastQuote(selectedSymbol));
+        repository.loadSelectedStock(selectedSymbol);
+        repository.getLastQuote(selectedSymbol);
         LocalDate today = LocalDate.now();
-        dailyData.postValue(repository.getDailyTimeSeries(selectedSymbol,
-                today.minusMonths(6).toString(), today.toString()));
-        intraDayData.postValue(repository.getIntraDayTimeSeries(selectedSymbol));
+        repository.getDailyTimeSeries(selectedSymbol,
+                today.minusMonths(6).toString(), today.toString());
+        repository.getIntraDayTimeSeries(selectedSymbol);
     }
 
     public String getPrice(){
@@ -121,7 +149,7 @@ public class StockViewModel extends AndroidViewModel {
         return "";
     }
 
-    public String getVolume(){
+    private String getVolumeText(){
         Double volume;
         try {
             volume = Double.parseDouble(getSelectedStock().getValue().getVolume());
@@ -165,7 +193,7 @@ public class StockViewModel extends AndroidViewModel {
     }
 
     public StockChangeStatus getStockStatus(){
-        StockRealTimeData stock = selectedStock.getValue();
+        StockRealTimeData stock = getSelectedStock().getValue();
 
         if(stock != null){
             double dayChange;

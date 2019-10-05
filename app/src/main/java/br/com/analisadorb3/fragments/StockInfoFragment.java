@@ -15,7 +15,6 @@ import androidx.viewpager.widget.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
@@ -65,7 +64,7 @@ public class StockInfoFragment extends Fragment {
         mViewModel.getSelectedStock().observe(this, new Observer<StockRealTimeData>() {
             @Override
             public void onChanged(StockRealTimeData stockRealTimeData) {
-                mViewModel.fetchData();
+                mViewModel.updateView();
             }
         });
 
@@ -77,13 +76,12 @@ public class StockInfoFragment extends Fragment {
             }
         });
 
-        final TextView averageVariationText = getView().findViewById(R.id.day_change_average_3_value);
         mViewModel.getDailyData().observe(this, new Observer<Map<String, StockHistoricalData>>() {
             @Override
             public void onChanged(Map<String, StockHistoricalData> maps) {
-                averageVariationText.setText(mViewModel.getThreeMonthsVariation());
                 chartAdapter.setDailyData(maps);
                 chartAdapter.setStatus(mViewModel.getStockStatus());
+                mViewModel.updateView();
             }
         });
 
@@ -91,7 +89,7 @@ public class StockInfoFragment extends Fragment {
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                mViewModel.setSelectedStock(mViewModel.getSelectedStock().getValue());
+                mViewModel.fetchData();
             }
         });
 
@@ -105,5 +103,4 @@ public class StockInfoFragment extends Fragment {
         if(savedInstanceState == null)
             mViewModel.fetchData();
     }
-
 }
