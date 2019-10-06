@@ -37,6 +37,7 @@ public class StockRepository {
     private MutableLiveData<StockRealTimeData> selectedStock = new MutableLiveData<>();
     private MutableLiveData<Map<String, StockHistoricalData>> dailyData = new MutableLiveData<>();
     private MutableLiveData<Map<String, StockIntraDayData>> intraDayData = new MutableLiveData<>();
+    private MutableLiveData<List<StockRealTimeData>> savedStocks = new MutableLiveData<>();
 
     public MutableLiveData<List<StockSearchResult>> getSearchResults() {
         return searchResults;
@@ -56,6 +57,10 @@ public class StockRepository {
 
     public MutableLiveData<Map<String, StockIntraDayData>> getIntraDayData() {
         return intraDayData;
+    }
+
+    public MutableLiveData<List<StockRealTimeData>> getSavedStocks(){
+        return savedStocks;
     }
 
     public static StockRepository getInstance(){
@@ -87,25 +92,23 @@ public class StockRepository {
         getLastQuote(symbol);
     }
 
-    public List<StockRealTimeData> getLastQuote(List<String> symbols){
-        return getLastQuote(TextUtils.join(",", symbols));
+    public void getLastQuote(List<String> symbols){
+        getLastQuote(TextUtils.join(",", symbols));
     }
 
-    public List<StockRealTimeData> getLastQuote(String symbol){
+    public void getLastQuote(String symbol){
         refreshing.setValue(true);
-        final List<StockRealTimeData> stocks = new ArrayList<>();
         worldTradingApi.getLastQuote(symbol, WORLD_TRADING_TOKEN)
                 .enqueue(new Callback<RealTimeDataResponse>() {
                     @Override
                     public void onResponse(Call<RealTimeDataResponse> call, Response<RealTimeDataResponse> response) {
                         if(!response.isSuccessful()){
                             refreshing.setValue(false);
+                            savedStocks.postValue(null);
                             selectedStock.postValue(null);
                             return;
                         }
-                        for(StockRealTimeData data : response.body().getData()){
-                            stocks.add(data);
-                        }
+                        savedStocks.postValue(response.body().getData());
                         selectedStock.postValue(response.body().getData().get(0));
                         refreshing.setValue(false);
                     }
@@ -113,16 +116,15 @@ public class StockRepository {
                     @Override
                     public void onFailure(Call<RealTimeDataResponse> call, Throwable t) {
                         // TODO handle errors
+                        savedStocks.postValue(null);
                         selectedStock.postValue(null);
                         refreshing.setValue(false);
                     }
                 });
-        return stocks;
     }
 
-    public Map<String, StockHistoricalData> getDailyTimeSeries(String symbol, String dateFrom, String dateTo){
+    public void getDailyTimeSeries(String symbol, String dateFrom, String dateTo){
         refreshing.setValue(true);
-        final Map<String, StockHistoricalData> history = new HashMap<>();
         worldTradingApi.getDailyTimeSeries(symbol, WORLD_TRADING_TOKEN, "newest", dateFrom, dateTo)
                 .enqueue(new Callback<HistoricalDataResponse>() {
                     @Override
@@ -131,24 +133,21 @@ public class StockRepository {
                             dailyData.postValue(null);
                             return;
                         }
-                        for(String key : response.body().getHistory().keySet()){
-                            history.put(key, response.body().getHistory().get(key));
-                        }
                         dailyData.postValue(response.body().getHistory());
+                        refreshing.setValue(false);
                     }
 
                     @Override
                     public void onFailure(Call<HistoricalDataResponse> call, Throwable t) {
                         dailyData.postValue(null);
+                        refreshing.setValue(false);
                         // TODO handle errors
                     }
                 });
-        return history;
     }
 
-    public List<StockSearchResult> searchStock(String searchTerm){
+    public void searchStock(String searchTerm){
         refreshing.setValue(true);
-        final List<StockSearchResult> results = new ArrayList<>();
         worldTradingApi.searchStock(searchTerm, WORLD_TRADING_TOKEN)
                 .enqueue(new Callback<StockSearchResponse>() {
                     @Override
@@ -157,9 +156,6 @@ public class StockRepository {
                             refreshing.setValue(false);
                             searchResults.postValue(null);
                             return;
-                        }
-                        for(StockSearchResult result : response.body().getData()){
-                            results.add(result);
                         }
                         searchResults.postValue(response.body().getData());
                         refreshing.setValue(false);
@@ -172,12 +168,9 @@ public class StockRepository {
                         refreshing.setValue(false);
                     }
                 });
-        return results;
     }
 
-    public Map<String, StockIntraDayData> getIntraDayTimeSeries(String symbol){
-        refreshing.setValue(true);
-        final Map<String, StockIntraDayData> stocks = new HashMap<>();
+    public void getIntraDayTimeSeries(String symbol){
         alphaVantageAPI.getIntradayData("TIME_SERIES_INTRADAY", "1min",
                 symbol, ALPHAVANTAGE_API_KEY, "full")
                 .enqueue(new Callback<IntradayDataResponse>(){
@@ -185,23 +178,16 @@ public class StockRepository {
                     public void onFailure(Call<IntradayDataResponse> call, Throwable t) {
                         // TODO handle errors
                         intraDayData.postValue(null);
-                        refreshing.setValue(false);
                     }
 
                     @Override
                     public void onResponse(Call<IntradayDataResponse> call, Response<IntradayDataResponse> response) {
                         if(!response.isSuccessful()){
-                            refreshing.setValue(false);
                             intraDayData.postValue(null);
                             return;
                         }
-                        for(String key : response.body().getTimeSeries().keySet()){
-                            stocks.put(key, response.body().getTimeSeries().get(key));
-                        }
                         intraDayData.postValue(response.body().getTimeSeries());
-                        refreshing.setValue(false);
                     }
                 });
-        return stocks;
     }
 }

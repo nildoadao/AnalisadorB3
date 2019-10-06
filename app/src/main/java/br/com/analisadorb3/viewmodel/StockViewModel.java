@@ -3,6 +3,7 @@ package br.com.analisadorb3.viewmodel;
 import android.app.Application;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 
 import androidx.annotation.NonNull;
 import androidx.databinding.ObservableField;
@@ -13,13 +14,13 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+import br.com.analisadorb3.R;
 import br.com.analisadorb3.api.StockRepository;
 import br.com.analisadorb3.models.StockHistoricalData;
 import br.com.analisadorb3.models.StockIntraDayData;
 import br.com.analisadorb3.models.StockRealTimeData;
 import br.com.analisadorb3.models.StockSearchResult;
 import br.com.analisadorb3.util.SettingsUtil;
-import br.com.analisadorb3.util.StockChangeStatus;
 import br.com.analisadorb3.util.StockUtil;
 
 public class StockViewModel extends AndroidViewModel {
@@ -34,6 +35,7 @@ public class StockViewModel extends AndroidViewModel {
     private ObservableField<String> high = new ObservableField<>();
     private ObservableField<String> volume = new ObservableField<>();
     private ObservableField<String> threeMonthsAverageChange = new ObservableField<>();
+    private ObservableField<Drawable> followButtonImage = new ObservableField<>();
 
     public StockViewModel(@NonNull Application application) {
         super(application);
@@ -100,8 +102,21 @@ public class StockViewModel extends AndroidViewModel {
         return stockPrice;
     }
 
+    public ObservableField<Drawable> getFollowButtonImage(){
+        return followButtonImage;
+    }
+
     public boolean followStock(Context context, String symbol){
         return repository.followStock(context, symbol);
+    }
+
+    public Drawable getStockFollowStatusImage(){
+        String selectedSymbol = SettingsUtil.getSelectedSymbol(getApplication());
+
+        if(SettingsUtil.getFavouriteStocks(getApplication()).contains(selectedSymbol))
+            return getApplication().getApplicationContext().getDrawable(R.drawable.star_icon);
+        else
+            return getApplication().getApplicationContext().getDrawable(R.drawable.plus_icon);
     }
 
     public boolean unfollowStock(Context context, String symbol){
@@ -127,6 +142,7 @@ public class StockViewModel extends AndroidViewModel {
         high.set(getSelectedStock().getValue().getDayHigh());
         volume.set(getVolumeText());
         threeMonthsAverageChange.set(getThreeMonthsVariation());
+        followButtonImage.set(getStockFollowStatusImage());
     }
 
     public void fetchData(){
@@ -182,36 +198,13 @@ public class StockViewModel extends AndroidViewModel {
         }
 
         if(dayChange >= 0)
-            return Color.GREEN;
+            return Color.argb(127, 0, 127, 0);
         else
-            return Color.RED;
+            return Color.argb(127, 127, 0, 0);
     }
 
     public String getThreeMonthsVariation(){
         Double averageChange = StockUtil.getAverageVariation(getDailyData().getValue(), 6);
         return String.format("%.2f", averageChange);
     }
-
-    public StockChangeStatus getStockStatus(){
-        StockRealTimeData stock = getSelectedStock().getValue();
-
-        if(stock != null){
-            double dayChange;
-            try {
-                dayChange = Double.parseDouble(stock.getDayChange());
-            }
-            catch (Exception e){
-                dayChange = 0d;
-            }
-
-            if(dayChange >= 0)
-                return StockChangeStatus.VALUE_UP;
-
-            else
-                return StockChangeStatus.VALUE_DOWN;
-        }
-        else
-            return StockChangeStatus.VALUE_DOWN;
-    }
-
 }

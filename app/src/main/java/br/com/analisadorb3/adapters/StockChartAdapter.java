@@ -16,14 +16,12 @@ import br.com.analisadorb3.fragments.SixMonthsChartFragment;
 import br.com.analisadorb3.fragments.TreeDaysChartFragment;
 import br.com.analisadorb3.models.StockHistoricalData;
 import br.com.analisadorb3.models.StockIntraDayData;
-import br.com.analisadorb3.util.StockChangeStatus;
 
 public class StockChartAdapter extends FragmentStatePagerAdapter {
 
     Context context;
     Map<String, StockIntraDayData> intraDayData;
     Map<String, StockHistoricalData> dailyData;
-    StockChangeStatus status;
 
     public StockChartAdapter(Context context, FragmentManager fragmentManager){
         super(fragmentManager);
@@ -38,20 +36,16 @@ public class StockChartAdapter extends FragmentStatePagerAdapter {
         this.dailyData = dailyData;
     }
 
-    public void setStatus(StockChangeStatus status){
-        this.status = status;
-    }
-
     @Override
     public Fragment getItem(int position) {
         if(position == 0)
-            return DayChartFragment.newInstance(intraDayData, status);
+            return DayChartFragment.newInstance(intraDayData);
         else if(position == 1)
-            return TreeDaysChartFragment.newInstance(intraDayData, status);
+            return TreeDaysChartFragment.newInstance(intraDayData);
         else if(position == 2)
-            return MonthChartFragment.newInstance(dailyData, status);
+            return MonthChartFragment.newInstance(dailyData);
         else
-            return SixMonthsChartFragment.newInstance(dailyData, status);
+            return SixMonthsChartFragment.newInstance(dailyData);
     }
 
     @Override

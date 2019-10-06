@@ -31,11 +31,11 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public MutableLiveData<List<StockRealTimeData>> getSavedStocks(){
-        return savedStocks;
+        return repository.getSavedStocks();
     }
 
     public void updateStocks(){
-        savedStocks.postValue(repository.getLastQuote(SettingsUtil.getFavouriteStocks(getApplication())));
+        repository.getLastQuote(SettingsUtil.getFavouriteStocks(getApplication()));
     }
 
     public void setSelectedStock(StockRealTimeData stock){

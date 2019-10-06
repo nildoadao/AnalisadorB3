@@ -15,12 +15,10 @@ import java.util.Map;
 import br.com.analisadorb3.R;
 import br.com.analisadorb3.models.StockIntraDayData;
 import br.com.analisadorb3.util.ChartUtil;
-import br.com.analisadorb3.util.StockChangeStatus;
 
 public class TreeDaysChartFragment extends Fragment {
 
     private Map<String, StockIntraDayData> intraDayData;
-    StockChangeStatus status;
 
     public TreeDaysChartFragment() {
         // Required empty public constructor
@@ -30,14 +28,9 @@ public class TreeDaysChartFragment extends Fragment {
         intraDayData = data;
     }
 
-    private void setStatus(StockChangeStatus status){
-        this.status = status;
-    }
-
-    public static TreeDaysChartFragment newInstance(Map<String, StockIntraDayData> data, StockChangeStatus status){
+    public static TreeDaysChartFragment newInstance(Map<String, StockIntraDayData> data){
         TreeDaysChartFragment chart = new TreeDaysChartFragment();
         chart.setData(data);
-        chart.setStatus(status);
         return chart;
     }
 

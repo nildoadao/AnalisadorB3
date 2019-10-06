@@ -65,6 +65,7 @@ public class SearchFragment extends Fragment {
                     else
                         Toast.makeText(getActivity().getApplication(), getText(R.string.stocks_saved_limit), Toast.LENGTH_LONG).show();
                 }
+                viewModel.updateView();
             }
         });
 

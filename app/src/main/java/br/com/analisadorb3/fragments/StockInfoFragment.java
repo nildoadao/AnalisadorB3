@@ -15,6 +15,8 @@ import androidx.viewpager.widget.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
@@ -27,6 +29,7 @@ import br.com.analisadorb3.databinding.StockInfoFragmentBinding;
 import br.com.analisadorb3.models.StockHistoricalData;
 import br.com.analisadorb3.models.StockIntraDayData;
 import br.com.analisadorb3.models.StockRealTimeData;
+import br.com.analisadorb3.util.SettingsUtil;
 import br.com.analisadorb3.viewmodel.StockViewModel;
 
 public class StockInfoFragment extends Fragment {
@@ -48,7 +51,7 @@ public class StockInfoFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        ViewPager viewPager = getView().findViewById(R.id.chart_view_pager);
+        final ViewPager viewPager = getView().findViewById(R.id.chart_view_pager);
         chartAdapter = new StockChartAdapter(getContext(), getFragmentManager());
         viewPager.setAdapter(chartAdapter);
         TabLayout tabLayout = getView().findViewById(R.id.chart_tab);
@@ -65,6 +68,7 @@ public class StockInfoFragment extends Fragment {
             @Override
             public void onChanged(StockRealTimeData stockRealTimeData) {
                 mViewModel.updateView();
+                viewPager.setAdapter(chartAdapter);
             }
         });
 
@@ -72,7 +76,7 @@ public class StockInfoFragment extends Fragment {
             @Override
             public void onChanged(Map<String, StockIntraDayData> stringStockIntraDayDataMap) {
                 chartAdapter.setIntraDayData(stringStockIntraDayDataMap);
-                chartAdapter.setStatus(mViewModel.getStockStatus());
+                viewPager.setAdapter(chartAdapter);
             }
         });
 
@@ -80,7 +84,7 @@ public class StockInfoFragment extends Fragment {
             @Override
             public void onChanged(Map<String, StockHistoricalData> maps) {
                 chartAdapter.setDailyData(maps);
-                chartAdapter.setStatus(mViewModel.getStockStatus());
+                viewPager.setAdapter(chartAdapter);
                 mViewModel.updateView();
             }
         });
@@ -97,6 +101,27 @@ public class StockInfoFragment extends Fragment {
             @Override
             public void onChanged(Boolean aBoolean) {
                 refreshLayout.setRefreshing(aBoolean);
+            }
+        });
+
+        ImageButton followButton = getView().findViewById(R.id.follow_button);
+        followButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String selectedSymbol = SettingsUtil.getSelectedSymbol(getContext());
+                if(SettingsUtil.getFavouriteStocks(getContext()).contains(selectedSymbol)){
+                    if(mViewModel.unfollowStock(getActivity().getApplication(), selectedSymbol))
+                        Toast.makeText(getActivity().getApplication(), getText(R.string.removed), Toast.LENGTH_LONG).show();
+                    else
+                        Toast.makeText(getActivity().getApplication(), getText(R.string.remove_fail), Toast.LENGTH_LONG).show();
+                }
+                else {
+                    if(mViewModel.followStock(getActivity().getApplication(), selectedSymbol))
+                        Toast.makeText(getActivity().getApplication(), getText(R.string.saved), Toast.LENGTH_LONG).show();
+                    else
+                        Toast.makeText(getActivity().getApplication(), getText(R.string.stocks_saved_limit), Toast.LENGTH_LONG).show();
+                }
+                mViewModel.updateView();
             }
         });
 

@@ -23,12 +23,12 @@ import br.com.analisadorb3.models.StockIntraDayData;
 
 public class ChartUtil {
 
-    public static LineData getDayChart(final LineChart chart, final Map<String, StockIntraDayData> data, StockChangeStatus status){
+    public static LineData getDayChart(final LineChart chart, final Map<String, StockIntraDayData> data){
 
         if(data == null)
             return null;
 
-        ArrayList<Entry> entries = new ArrayList<>();
+        final ArrayList<Entry> entries = new ArrayList<>();
         String lastTradingTimeString = "";
 
         for(String key : data.keySet()){
@@ -37,37 +37,37 @@ public class ChartUtil {
         }
 
         LocalDate lastTradingTime = LocalDate.parse(lastTradingTimeString, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        int i = 0;
+
         for(String key : data.keySet()){
             StockIntraDayData quote = data.get(key);
             LocalDate quoteDate = LocalDate.parse(key, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
             if(quoteDate.getDayOfYear() == lastTradingTime.getDayOfYear()){
                 float price = Float.parseFloat(quote.getClose());
-                entries.add(new Entry(i, price));
-                i++;
+                entries.add(new Entry(entries.size(), price));
             }
             else {
                 break;
             }
         }
 
-        ArrayList<Entry> reverseEntries = new ArrayList<>();
+        final ArrayList<Entry> reverseEntries = new ArrayList<>();
         for(int j = entries.size() - 1; j >= 0; j--){
             reverseEntries.add(new Entry(reverseEntries.size(), entries.get(j).getY()));
         }
 
         LineDataSet dataSet = new LineDataSet(reverseEntries, "Variação diária");
+        dataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
 
-        if(status == StockChangeStatus.VALUE_UP){
+        if(reverseEntries.get(0).getY() < reverseEntries.get(reverseEntries.size() - 1).getY()){
             dataSet.setColor(Color.argb(255, 0, 127, 0));
             dataSet.setValueTextColor(Color.argb(255, 0, 127, 0));
-            dataSet.setFillColor(Color.argb(255, 0,127,0));
+            dataSet.setFillColor(Color.argb(64, 0,127,0));
         }
         else{
             dataSet.setColor(Color.argb(255, 127, 0, 0));
             dataSet.setValueTextColor(Color.argb(255, 127, 0, 0));
-            dataSet.setFillColor(Color.argb(255, 127,0,0));
+            dataSet.setFillColor(Color.argb(64, 127,0,0));
         }
 
         dataSet.setDrawCircles(false);
@@ -127,24 +127,66 @@ public class ChartUtil {
     }
 
     public static LineData getTreeDayChart(final LineChart chart, Map<String, StockIntraDayData> data){
+
         if(data == null)
             return null;
 
-        //Collections.sort(data);
         final ArrayList<Entry> entries = new ArrayList<>();
-        //LocalDate currentDate = LocalDate.now();
 
-        for(int i = 0; i < data.size(); i++){
-            //StockRealTimeData quote = data.get(i);
-            /*if(quote.getDate().isAfter(currentDate.minusDays(3))){
-                float price = Float.parseFloat(quote.getClose());
-                entries.add(new Entry(i, price));
-            }*/
+        String lastTradingTimeString = "";
+
+        for(String key : data.keySet()){
+            lastTradingTimeString = key;
+            break;
         }
 
-        LineDataSet dataSet = new LineDataSet(entries, "Variação 3 dias");
-        dataSet.setColor(Color.argb(255, 0, 0, 127));
-        dataSet.setValueTextColor(Color.argb(255,0,0,127));
+        LocalDate lastTradingTime = LocalDate.parse(lastTradingTimeString,
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+        for(String key : data.keySet()){
+            StockIntraDayData quote = data.get(key);
+            LocalDate quoteDate = LocalDate.parse(key,
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+
+            switch(quoteDate.getDayOfWeek()){
+                case MONDAY :
+                case TUESDAY:
+                    if(quoteDate.isAfter(lastTradingTime.minusDays(4))){
+                        float price = Float.parseFloat(quote.getClose());
+                        entries.add(new Entry(entries.size(), price));
+                    }
+                    break;
+                default:
+                    if(quoteDate.isAfter(lastTradingTime.minusDays(2))){
+                        float price = Float.parseFloat(quote.getClose());
+                        entries.add(new Entry(entries.size(), price));
+                    }
+                    break;
+            }
+
+            if(quoteDate.isBefore(lastTradingTime.minusDays(4)))
+                break;
+        }
+
+        final ArrayList<Entry> reverseEntries = new ArrayList<>();
+        for(int j = entries.size() - 1; j >= 0; j--){
+            reverseEntries.add(new Entry(reverseEntries.size(), entries.get(j).getY()));
+        }
+
+        LineDataSet dataSet = new LineDataSet(reverseEntries, "Variação 3 dias");
+        dataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+
+        if(reverseEntries.get(0).getY() < reverseEntries.get(reverseEntries.size() - 1).getY()){
+            dataSet.setColor(Color.argb(255, 0, 127, 0));
+            dataSet.setValueTextColor(Color.argb(255, 0, 127, 0));
+            dataSet.setFillColor(Color.argb(64, 0,127,0));
+        }
+        else{
+            dataSet.setColor(Color.argb(255, 127, 0, 0));
+            dataSet.setValueTextColor(Color.argb(255, 127, 0, 0));
+            dataSet.setFillColor(Color.argb(64, 127,0,0));
+        }
+
         dataSet.setDrawCircles(false);
         dataSet.setDrawCircleHole(false);
         dataSet.setDrawFilled(true);
@@ -154,8 +196,6 @@ public class ChartUtil {
                 return chart.getAxisLeft().getAxisMinimum();
             }
         });
-        dataSet.setFillColor(Color.argb(255, 183,242,255));
-        //****
         // Controlling X axis
         XAxis xAxis = chart.getXAxis();
         // Set the xAxis position to bottom. Default is top
