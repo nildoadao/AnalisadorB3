@@ -1,6 +1,7 @@
 package br.com.analisadorb3.fragments;
 
 import androidx.databinding.DataBindingUtil;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
@@ -53,6 +54,10 @@ public class StockInfoFragment extends Fragment {
 
         final ViewPager viewPager = getView().findViewById(R.id.chart_view_pager);
         chartAdapter = new StockChartAdapter(getContext(), getFragmentManager());
+        Map<String, StockIntraDayData> intraDayData = mViewModel.getIntraDayData().getValue();
+        Map<String, StockHistoricalData> dailyData = mViewModel.getDailyData().getValue();
+        chartAdapter.setIntraDayData(intraDayData);
+        chartAdapter.setDailyData(dailyData);
         viewPager.setAdapter(chartAdapter);
         TabLayout tabLayout = getView().findViewById(R.id.chart_tab);
         tabLayout.setupWithViewPager(viewPager);
@@ -68,7 +73,6 @@ public class StockInfoFragment extends Fragment {
             @Override
             public void onChanged(StockRealTimeData stockRealTimeData) {
                 mViewModel.updateView();
-                viewPager.setAdapter(chartAdapter);
             }
         });
 
@@ -85,7 +89,9 @@ public class StockInfoFragment extends Fragment {
             public void onChanged(Map<String, StockHistoricalData> maps) {
                 chartAdapter.setDailyData(maps);
                 viewPager.setAdapter(chartAdapter);
-                mViewModel.updateView();
+
+                if(maps != null)
+                    mViewModel.updateView();
             }
         });
 
@@ -125,7 +131,8 @@ public class StockInfoFragment extends Fragment {
             }
         });
 
-        if(savedInstanceState == null)
+        if(savedInstanceState == null){
             mViewModel.fetchData();
+        }
     }
 }

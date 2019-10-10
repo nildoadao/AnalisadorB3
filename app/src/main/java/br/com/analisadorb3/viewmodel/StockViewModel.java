@@ -7,6 +7,7 @@ import android.graphics.drawable.Drawable;
 
 import androidx.annotation.NonNull;
 import androidx.databinding.ObservableField;
+import androidx.databinding.ObservableInt;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
 
@@ -29,8 +30,10 @@ public class StockViewModel extends AndroidViewModel {
     private ObservableField<String> stockSymbol = new ObservableField<>();
     private ObservableField<String> stockCompany = new ObservableField<>();
     private ObservableField<String> stockPrice = new ObservableField<>();
-    private ObservableField<String> lastClose = new ObservableField<>();
+    private ObservableField<String> stockChangePercent = new ObservableField<>();
+    private ObservableInt changeTextColor = new ObservableInt();
     private ObservableField<String> open = new ObservableField<>();
+    private ObservableField<String> lastClose = new ObservableField<>();
     private ObservableField<String> low = new ObservableField<>();
     private ObservableField<String> high = new ObservableField<>();
     private ObservableField<String> volume = new ObservableField<>();
@@ -102,6 +105,14 @@ public class StockViewModel extends AndroidViewModel {
         return stockPrice;
     }
 
+    public ObservableField<String> getStockChangePercent(){
+        return stockChangePercent;
+    }
+
+    public ObservableInt getChangeTextColor(){
+        return changeTextColor;
+    }
+
     public ObservableField<Drawable> getFollowButtonImage(){
         return followButtonImage;
     }
@@ -124,8 +135,9 @@ public class StockViewModel extends AndroidViewModel {
     }
 
     public void setSelectedStock(String symbol){
+        repository.clearStockHistory();
         SettingsUtil.setSelectedSymbol(getApplication(), symbol);
-        repository.loadSelectedStock(symbol);
+        repository.updateSelectedStock(symbol);
     }
 
     public void search(String searchTerm){
@@ -136,6 +148,8 @@ public class StockViewModel extends AndroidViewModel {
         stockSymbol.set(getSelectedStock().getValue().getSymbol());
         stockCompany.set(getSelectedStock().getValue().getName());
         stockPrice.set(getPrice());
+        stockChangePercent.set(getChangeText());
+        changeTextColor.set(calculateChangeTextColor());
         lastClose.set(getSelectedStock().getValue().getCloseYesterday());
         open.set(getSelectedStock().getValue().getPriceOpen());
         low.set(getSelectedStock().getValue().getDayLow());
@@ -147,8 +161,7 @@ public class StockViewModel extends AndroidViewModel {
 
     public void fetchData(){
         String selectedSymbol = SettingsUtil.getSelectedSymbol(getApplication());
-        repository.loadSelectedStock(selectedSymbol);
-        repository.getLastQuote(selectedSymbol);
+        repository.updateSelectedStock(selectedSymbol);
         LocalDate today = LocalDate.now();
         repository.getDailyTimeSeries(selectedSymbol,
                 today.minusMonths(6).toString(), today.toString());
@@ -187,7 +200,7 @@ public class StockViewModel extends AndroidViewModel {
         return "";
     }
 
-    public int getChangeTextColor(){
+    public int calculateChangeTextColor(){
 
         Double dayChange;
         try {
@@ -198,9 +211,9 @@ public class StockViewModel extends AndroidViewModel {
         }
 
         if(dayChange >= 0)
-            return Color.argb(127, 0, 127, 0);
+            return Color.argb(255, 0, 127, 0);
         else
-            return Color.argb(127, 127, 0, 0);
+            return Color.RED;
     }
 
     public String getThreeMonthsVariation(){

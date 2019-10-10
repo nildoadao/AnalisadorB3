@@ -1,7 +1,6 @@
 package br.com.analisadorb3.viewmodel;
 
 import android.app.Application;
-import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -15,7 +14,6 @@ import br.com.analisadorb3.util.SettingsUtil;
 public class MainViewModel extends AndroidViewModel {
 
     private StockRepository repository;
-    private MutableLiveData<List<StockRealTimeData>> savedStocks = new MutableLiveData<>();
 
     public MainViewModel(@NonNull Application application) {
         super(application);
@@ -24,6 +22,10 @@ public class MainViewModel extends AndroidViewModel {
 
     public MutableLiveData<Boolean> isRefreshing(){
         return repository.isRefreshing();
+    }
+
+    public MutableLiveData<List<String>> getFavouriteStocks(){
+        return repository.getFavouriteStocks();
     }
 
     public void unfollowStock(StockRealTimeData stock){
@@ -35,10 +37,11 @@ public class MainViewModel extends AndroidViewModel {
     }
 
     public void updateStocks(){
-        repository.getLastQuote(SettingsUtil.getFavouriteStocks(getApplication()));
+        repository.updateSavedStocks(SettingsUtil.getFavouriteStocks(getApplication()));
     }
 
     public void setSelectedStock(StockRealTimeData stock){
+        repository.clearStockHistory();
         SettingsUtil.setSelectedSymbol(getApplication(), stock.getSymbol());
     }
 }

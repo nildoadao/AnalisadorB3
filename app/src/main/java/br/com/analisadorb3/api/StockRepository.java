@@ -5,10 +5,9 @@ import android.text.TextUtils;
 
 import androidx.lifecycle.MutableLiveData;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import br.com.analisadorb3.models.HistoricalDataResponse;
 import br.com.analisadorb3.models.IntradayDataResponse;
@@ -81,22 +80,51 @@ public class StockRepository {
     }
 
     public boolean unfollowStock(Context context, String symbol){
-        return SettingsUtil.removeFavouriteStock(context, symbol);
+        boolean result =  SettingsUtil.removeFavouriteStock(context, symbol);
+        favouriteStocks.postValue(SettingsUtil.getFavouriteStocks(context));
+        return result;
+    }
+
+    public void clearStockHistory(){
+        intraDayData.setValue(null);
+        dailyData.setValue(null);
     }
 
     public boolean followStock(Context context, String symbol){
-        return SettingsUtil.saveFavouriteStock(context, symbol);
+        boolean result = SettingsUtil.saveFavouriteStock(context, symbol);
+        favouriteStocks.postValue(SettingsUtil.getFavouriteStocks(context));
+        return result;
     }
 
-    public void loadSelectedStock(String symbol){
-        getLastQuote(symbol);
+    public void updateSavedStocks(List<String> symbols){
+        updateSavedStocks(TextUtils.join(",", symbols));
     }
 
-    public void getLastQuote(List<String> symbols){
-        getLastQuote(TextUtils.join(",", symbols));
+    public void updateSelectedStock(String symbol){
+        refreshing.setValue(true);
+        worldTradingApi.getLastQuote(symbol, WORLD_TRADING_TOKEN)
+                .enqueue(new Callback<RealTimeDataResponse>() {
+                    @Override
+                    public void onResponse(Call<RealTimeDataResponse> call, Response<RealTimeDataResponse> response) {
+                        if(!response.isSuccessful()){
+                            refreshing.setValue(false);
+                            selectedStock.postValue(null);
+                            return;
+                        }
+                        selectedStock.postValue(response.body().getData().get(0));
+                        refreshing.setValue(false);
+                    }
+
+                    @Override
+                    public void onFailure(Call<RealTimeDataResponse> call, Throwable t) {
+                        // TODO handle errors
+                        selectedStock.postValue(null);
+                        refreshing.setValue(false);
+                    }
+                });
     }
 
-    public void getLastQuote(String symbol){
+    public void updateSavedStocks(String symbol){
         refreshing.setValue(true);
         worldTradingApi.getLastQuote(symbol, WORLD_TRADING_TOKEN)
                 .enqueue(new Callback<RealTimeDataResponse>() {
@@ -105,11 +133,9 @@ public class StockRepository {
                         if(!response.isSuccessful()){
                             refreshing.setValue(false);
                             savedStocks.postValue(null);
-                            selectedStock.postValue(null);
                             return;
                         }
                         savedStocks.postValue(response.body().getData());
-                        selectedStock.postValue(response.body().getData().get(0));
                         refreshing.setValue(false);
                     }
 
@@ -117,7 +143,6 @@ public class StockRepository {
                     public void onFailure(Call<RealTimeDataResponse> call, Throwable t) {
                         // TODO handle errors
                         savedStocks.postValue(null);
-                        selectedStock.postValue(null);
                         refreshing.setValue(false);
                     }
                 });

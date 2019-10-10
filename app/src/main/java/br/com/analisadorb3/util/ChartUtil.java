@@ -62,12 +62,12 @@ public class ChartUtil {
         if(reverseEntries.get(0).getY() < reverseEntries.get(reverseEntries.size() - 1).getY()){
             dataSet.setColor(Color.argb(255, 0, 127, 0));
             dataSet.setValueTextColor(Color.argb(255, 0, 127, 0));
-            dataSet.setFillColor(Color.argb(64, 0,127,0));
+            dataSet.setFillColor(Color.argb(127, 0,127,0));
         }
         else{
             dataSet.setColor(Color.argb(255, 127, 0, 0));
             dataSet.setValueTextColor(Color.argb(255, 127, 0, 0));
-            dataSet.setFillColor(Color.argb(64, 127,0,0));
+            dataSet.setFillColor(Color.argb(127, 127,0,0));
         }
 
         dataSet.setDrawCircles(false);

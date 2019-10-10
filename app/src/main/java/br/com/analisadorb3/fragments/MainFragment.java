@@ -66,6 +66,13 @@ public class MainFragment extends Fragment {
             }
         });
 
+        viewModel.getFavouriteStocks().observe(this, new Observer<List<String>>() {
+            @Override
+            public void onChanged(List<String> strings) {
+                viewModel.updateStocks();
+            }
+        });
+
         viewModel.getSavedStocks().observe(this, new Observer<List<StockRealTimeData>>() {
             @Override
             public void onChanged(List<StockRealTimeData> stockRealTimeData) {
