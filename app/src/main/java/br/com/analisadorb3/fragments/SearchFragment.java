@@ -25,6 +25,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.List;
 
 import br.com.analisadorb3.R;
+import br.com.analisadorb3.adapters.EmptySearchAdapter;
 import br.com.analisadorb3.adapters.StockSearchAdapter;
 import br.com.analisadorb3.models.StockSearchResult;
 import br.com.analisadorb3.util.SettingsUtil;
@@ -33,6 +34,7 @@ import br.com.analisadorb3.viewmodel.StockViewModel;
 public class SearchFragment extends Fragment {
 
     StockViewModel viewModel;
+    EmptySearchAdapter emptySearchAdapter = new EmptySearchAdapter();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -60,12 +62,13 @@ public class SearchFragment extends Fragment {
                         Toast.makeText(getActivity().getApplication(), getText(R.string.remove_fail), Toast.LENGTH_LONG).show();
                 }
                 else {
-                    if(viewModel.followStock(getActivity().getApplication(), stock.getSymbol()))
+                    if(viewModel.followStock(getActivity().getApplication(), stock.getSymbol())){
                         Toast.makeText(getActivity().getApplication(), getText(R.string.saved), Toast.LENGTH_LONG).show();
+                        viewModel.setSelectedStock(stock.getSymbol());
+                    }
                     else
                         Toast.makeText(getActivity().getApplication(), getText(R.string.stocks_saved_limit), Toast.LENGTH_LONG).show();
                 }
-                viewModel.updateView();
             }
         });
 
@@ -94,7 +97,13 @@ public class SearchFragment extends Fragment {
         viewModel.getSearchResults().observe(this, new Observer<List<StockSearchResult>>() {
             @Override
             public void onChanged(List<StockSearchResult> stockSearchResults) {
-                adapter.submitList(stockSearchResults);
+                if(stockSearchResults == null || stockSearchResults.size() == 0){
+                    recyclerView.setAdapter(emptySearchAdapter);
+                }
+                else {
+                    recyclerView.setAdapter(adapter);
+                    adapter.submitList(stockSearchResults);
+                }
             }
         });
 

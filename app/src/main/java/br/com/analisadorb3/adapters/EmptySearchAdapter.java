@@ -1,39 +1,37 @@
 package br.com.analisadorb3.adapters;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import br.com.analisadorb3.R;
 
-public class EmptySearchAdapter extends BaseAdapter {
-    private static LayoutInflater inflater = null;
+public class EmptySearchAdapter extends RecyclerView.Adapter<EmptySearchAdapter.EmptySearchHolder> {
 
-    public EmptySearchAdapter(Context context){
-        inflater = (LayoutInflater) context.getSystemService(context.LAYOUT_INFLATER_SERVICE);
+    @NonNull
+    @Override
+    public EmptySearchHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View itemView = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.empty_search, parent, false);
+        return new EmptySearchHolder(itemView);
     }
 
     @Override
-    public int getCount() {
+    public void onBindViewHolder(@NonNull EmptySearchHolder holder, int position) {
+
+    }
+
+    @Override
+    public int getItemCount() {
         return 1;
     }
 
-    @Override
-    public Object getItem(int i) {
-        return null;
-    }
-
-    @Override
-    public long getItemId(int i) {
-        return 0;
-    }
-
-    @Override
-    public View getView(int i, View view, ViewGroup viewGroup) {
-        if (view == null)
-            view = inflater.inflate(R.layout.empty_search,viewGroup, false);
-        return view;
+    class EmptySearchHolder extends RecyclerView.ViewHolder{
+        public EmptySearchHolder(@NonNull View itemView) {
+            super(itemView);
+        }
     }
 }

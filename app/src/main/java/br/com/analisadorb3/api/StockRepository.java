@@ -101,26 +101,22 @@ public class StockRepository {
     }
 
     public void updateSelectedStock(String symbol){
-        refreshing.setValue(true);
         worldTradingApi.getLastQuote(symbol, WORLD_TRADING_TOKEN)
                 .enqueue(new Callback<RealTimeDataResponse>() {
                     @Override
                     public void onResponse(Call<RealTimeDataResponse> call, Response<RealTimeDataResponse> response) {
                         if(!response.isSuccessful()){
-                            refreshing.setValue(false);
                             selectedStock.postValue(null);
                             return;
                         }
                         selectedStock.postValue(response.body().getData().get(0));
-                        refreshing.setValue(false);
                     }
 
                     @Override
                     public void onFailure(Call<RealTimeDataResponse> call, Throwable t) {
                         // TODO handle errors
                         selectedStock.postValue(null);
-                        refreshing.setValue(false);
-                    }
+                }
                 });
     }
 

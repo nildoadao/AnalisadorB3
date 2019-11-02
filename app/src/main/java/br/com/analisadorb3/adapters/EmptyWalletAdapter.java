@@ -1,40 +1,38 @@
 package br.com.analisadorb3.adapters;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
 import br.com.analisadorb3.R;
 
-public class EmptyWalletAdapter extends BaseAdapter {
+public class EmptyWalletAdapter extends RecyclerView.Adapter<EmptyWalletAdapter.EmptyWalletHolder> {
 
-    private static LayoutInflater inflater = null;
-
-    public EmptyWalletAdapter(Context context){
-        inflater = (LayoutInflater) context.getSystemService(context.LAYOUT_INFLATER_SERVICE);
+    @NonNull
+    @Override
+    public EmptyWalletHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View itemView = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.empty_wallet, parent, false);
+        return new EmptyWalletHolder(itemView);
     }
 
     @Override
-    public int getCount() {
+    public void onBindViewHolder(@NonNull EmptyWalletHolder holder, int position) {
+
+    }
+
+    @Override
+    public int getItemCount() {
         return 1;
     }
 
-    @Override
-    public Object getItem(int i) {
-        return null;
-    }
+    class EmptyWalletHolder extends RecyclerView.ViewHolder{
 
-    @Override
-    public long getItemId(int i) {
-        return 0;
-    }
-
-    @Override
-    public View getView(int i, View view, ViewGroup viewGroup) {
-        if (view == null)
-            view = inflater.inflate(R.layout.empty_wallet,viewGroup, false);
-        return view;
+        public EmptyWalletHolder(@NonNull View itemView) {
+            super(itemView);
+        }
     }
 }

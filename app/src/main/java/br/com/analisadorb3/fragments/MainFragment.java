@@ -26,6 +26,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.List;
 
 import br.com.analisadorb3.R;
+import br.com.analisadorb3.adapters.EmptyWalletAdapter;
 import br.com.analisadorb3.adapters.StockItemAdapter;
 import br.com.analisadorb3.databinding.MainFragmentBinding;
 import br.com.analisadorb3.models.StockRealTimeData;
@@ -34,7 +35,7 @@ import br.com.analisadorb3.viewmodel.MainViewModel;
 public class MainFragment extends Fragment {
 
     private MainViewModel viewModel;
-
+    private EmptyWalletAdapter emptyWalletAdapter = new EmptyWalletAdapter();
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
@@ -76,7 +77,13 @@ public class MainFragment extends Fragment {
         viewModel.getSavedStocks().observe(this, new Observer<List<StockRealTimeData>>() {
             @Override
             public void onChanged(List<StockRealTimeData> stockRealTimeData) {
-                adapter.submitList(stockRealTimeData);
+                if(stockRealTimeData == null){
+                    recyclerView.setAdapter(emptyWalletAdapter);
+                }
+                else {
+                    recyclerView.setAdapter(adapter);
+                    adapter.submitList(stockRealTimeData);
+                }
             }
         });
 
