@@ -14,25 +14,24 @@ import br.com.analisadorb3.fragments.DayChartFragment;
 import br.com.analisadorb3.fragments.MonthChartFragment;
 import br.com.analisadorb3.fragments.SixMonthsChartFragment;
 import br.com.analisadorb3.fragments.TreeDaysChartFragment;
-import br.com.analisadorb3.models.StockHistoricalData;
-import br.com.analisadorb3.models.StockIntraDayData;
+import br.com.analisadorb3.models.YahooStockData;
 
 public class StockChartAdapter extends FragmentStatePagerAdapter {
 
     Context context;
-    Map<String, StockIntraDayData> intraDayData;
-    Map<String, StockHistoricalData> dailyData;
+    YahooStockData intraDayData;
+    YahooStockData dailyData;
 
     public StockChartAdapter(Context context, FragmentManager fragmentManager){
         super(fragmentManager);
         this.context = context;
     }
 
-    public void setIntraDayData(Map<String, StockIntraDayData> data){
+    public void setIntraDayData(YahooStockData data){
         this.intraDayData = data;
     }
 
-    public void setDailyData(Map<String, StockHistoricalData> dailyData){
+    public void setDailyData(YahooStockData dailyData){
         this.dailyData = dailyData;
     }
 
@@ -41,7 +40,7 @@ public class StockChartAdapter extends FragmentStatePagerAdapter {
         if(position == 0)
             return DayChartFragment.newInstance(intraDayData);
         else if(position == 1)
-            return TreeDaysChartFragment.newInstance(intraDayData);
+            return TreeDaysChartFragment.newInstance(dailyData);
         else if(position == 2)
             return MonthChartFragment.newInstance(dailyData);
         else

@@ -13,56 +13,51 @@ import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.interfaces.dataprovider.LineDataProvider;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
 
-import br.com.analisadorb3.models.StockHistoricalData;
-import br.com.analisadorb3.models.StockIntraDayData;
+import br.com.analisadorb3.models.YahooStockData;
 
 public class ChartUtil {
 
-    public static LineData getDayChart(final LineChart chart, final Map<String, StockIntraDayData> data){
+    public static LineData getDayChart(final LineChart chart, final YahooStockData data){
 
         if(data == null)
             return null;
 
         final ArrayList<Entry> entries = new ArrayList<>();
         final ArrayList<String> dataList = new ArrayList<>();
+        
+        Date lastTradingTime = new Date(data.getChart().getResult().get(0).getTimestamp().get(0) * 1000);
 
-        String lastTradingTimeString = "";
+        for(int i = 0; i <  data.getChart().getResult().get(0).getTimestamp().size(); i++){
+            Long quote = data.getChart().getResult().get(0).getTimestamp().get(i) * 1000;
+            Date quoteDate = new Date(quote);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeZone(TimeZone.getTimeZone("America/Sao_Paulo"));
 
-        for(String key : data.keySet()){
-            lastTradingTimeString = key;
-            break;
-        }
+            if(quoteDate.getDay() == lastTradingTime.getDay()){
 
-        LocalDate lastTradingTime = LocalDate.parse(lastTradingTimeString, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                if(data.getChart().getResult().get(0).getIndicators().getQuote().get(0).getClose().get(i) == null)
+                    continue;
 
-        for(String key : data.keySet()){
-            StockIntraDayData quote = data.get(key);
-            LocalDate quoteDate = LocalDate.parse(key, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-
-            if(quoteDate.getDayOfYear() == lastTradingTime.getDayOfYear()){
-                float price = Float.parseFloat(quote.getClose());
+                float price = Float.parseFloat(data.getChart().getResult().get(0).getIndicators().getQuote().get(0).getClose().get(i).toString());
                 entries.add(new Entry(entries.size(), price));
-                dataList.add(key);
+                calendar.setTimeInMillis(quote + calendar.getTimeZone().getRawOffset());
+                dataList.add(String.format("%d:%d", calendar.getTime().getHours(), calendar.getTime().getMinutes()));
             }
             else {
                 break;
             }
         }
 
-        final ArrayList<Entry> reverseEntries = new ArrayList<>();
-        for(int j = entries.size() - 1; j >= 0; j--){
-            reverseEntries.add(new Entry(reverseEntries.size(), entries.get(j).getY()));
-        }
-
-        LineDataSet dataSet = new LineDataSet(reverseEntries, "");
+        LineDataSet dataSet = new LineDataSet(entries, "");
         dataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
 
-        if(reverseEntries.get(0).getY() < reverseEntries.get(reverseEntries.size() - 1).getY()){
+        if(Float.parseFloat(data.getChart().getResult().get(0).getMeta().getRegularMarketPrice()) >
+                Float.parseFloat(data.getChart().getResult().get(0).getMeta().getPreviousClose())){
             dataSet.setColor(Color.argb(255, 0, 127, 0));
             dataSet.setValueTextColor(Color.argb(255, 0, 127, 0));
             dataSet.setFillColor(Color.argb(127, 0,255,0));
@@ -93,23 +88,23 @@ public class ChartUtil {
             @Override
             public String getFormattedValue(float value) {
                 if(value == 0)
-                    return dataList.get(dataList.size() - 1);
+                    return dataList.get(0);
                 else if(value == 60)
-                    return dataList.get(dataList.size() - 61);
+                    return dataList.get(60);
                 else if(value == 120)
-                    return dataList.get(dataList.size() - 121);
+                    return dataList.get(120);
                 else if(value == 180)
-                    return dataList.get(dataList.size() - 181);
+                    return dataList.get(180);
                 else if(value == 240)
-                    return dataList.get(dataList.size() - 241);
+                    return dataList.get(240);
                 else if(value == 300)
-                    return dataList.get(dataList.size() - 301);
+                    return dataList.get(300);
                 else if(value == 360)
-                    return dataList.get(dataList.size() - 361);
+                    return dataList.get(360);
                 else if(value == 420)
-                    return dataList.get(dataList.size() - 421);
+                    return dataList.get(420);
                 else if(value == 480)
-                    return dataList.get(dataList.size() - 481);
+                    return dataList.get(480);
                 else
                     return "";
             }
@@ -129,60 +124,41 @@ public class ChartUtil {
         return new LineData(dataSet);
     }
 
-    public static LineData getTreeDayChart(final LineChart chart, final Map<String, StockIntraDayData> data){
-
+    public static LineData getTreeDayChart(final LineChart chart, final YahooStockData data){
         if(data == null)
             return null;
 
         final ArrayList<Entry> entries = new ArrayList<>();
         final ArrayList<String> dataList = new ArrayList<>();
 
-        String lastTradingTimeString = "";
+        Date lastTradingTime = new Date(data.getChart().getResult().get(0).getTimestamp().get(0) * 1000);
 
-        for(String key : data.keySet()){
-            lastTradingTimeString = key;
-            break;
-        }
+        for(int i = 0; i <  data.getChart().getResult().get(0).getTimestamp().size(); i++){
+            Long quote = data.getChart().getResult().get(0).getTimestamp().get(i) * 1000;
+            Date quoteDate = new Date(quote);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeZone(TimeZone.getTimeZone("America/Sao_Paulo"));
 
-        LocalDate lastTradingTime = LocalDate.parse(lastTradingTimeString,
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            if(lastTradingTime.compareTo(quoteDate) >= -3){
 
-        for(String key : data.keySet()){
-            StockIntraDayData quote = data.get(key);
-            LocalDate quoteDate = LocalDate.parse(key,
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                if(data.getChart().getResult().get(0).getIndicators().getQuote().get(0).getClose().get(i) == null)
+                    continue;
 
-            switch(quoteDate.getDayOfWeek()){
-                case MONDAY :
-                case TUESDAY:
-                    if(quoteDate.isAfter(lastTradingTime.minusDays(4))){
-                        float price = Float.parseFloat(quote.getClose());
-                        entries.add(new Entry(entries.size(), price));
-                        dataList.add(key);
-                    }
-                    break;
-                default:
-                    if(quoteDate.isAfter(lastTradingTime.minusDays(2))){
-                        float price = Float.parseFloat(quote.getClose());
-                        entries.add(new Entry(entries.size(), price));
-                        dataList.add(key);
-                    }
-                    break;
+                float price = Float.parseFloat(data.getChart().getResult().get(0).getIndicators().getQuote().get(0).getClose().get(i).toString());
+                entries.add(new Entry(entries.size(), price));
+                calendar.setTimeInMillis(quote + calendar.getTimeZone().getRawOffset());
+                dataList.add(String.format("%d/%d", calendar.getTime().getDay(), calendar.getTime().getMonth()));
             }
-
-            if(quoteDate.isBefore(lastTradingTime.minusDays(4)))
+            else{
                 break;
+            }
         }
 
-        final ArrayList<Entry> reverseEntries = new ArrayList<>();
-        for(int j = entries.size() - 1; j >= 0; j--){
-            reverseEntries.add(new Entry(reverseEntries.size(), entries.get(j).getY()));
-        }
-
-        LineDataSet dataSet = new LineDataSet(reverseEntries, "");
+        LineDataSet dataSet = new LineDataSet(entries, "");
         dataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
 
-        if(reverseEntries.get(0).getY() < reverseEntries.get(reverseEntries.size() - 1).getY()){
+        if(Double.parseDouble(data.getChart().getResult().get(0).getMeta().getRegularMarketPrice()) >
+                data.getChart().getResult().get(0).getIndicators().getQuote().get(0).getClose().get(0)){
             dataSet.setColor(Color.argb(255, 0, 127, 0));
             dataSet.setValueTextColor(Color.argb(255, 0, 127, 0));
             dataSet.setFillColor(Color.argb(64, 0,255,0));
@@ -211,27 +187,27 @@ public class ChartUtil {
             @Override
             public String getFormattedValue(float value) {
                 if(value == 0)
-                    return dataList.get(dataList.size() - 1);
+                    return dataList.get(0);
                 else if(value == 120)
-                    return dataList.get(dataList.size() - 121);
+                    return dataList.get(120);
                 else if(value == 240)
-                    return dataList.get(dataList.size() - 241);
+                    return dataList.get(240);
                 else if(value == 360)
-                    return dataList.get(dataList.size() - 361);
+                    return dataList.get(360);
                 else if(value == 480)
-                    return dataList.get(dataList.size() - 481);
+                    return dataList.get(480);
                 else if(value == 600)
-                    return dataList.get(dataList.size() - 601);
+                    return dataList.get(600);
                 else if(value == 720)
-                    return dataList.get(dataList.size() - 721);
+                    return dataList.get(720);
                 else if(value == 840)
-                    return dataList.get(dataList.size() - 841);
+                    return dataList.get(840);
                 else if(value == 960)
-                    return dataList.get(dataList.size() - 961);
+                    return dataList.get(960);
                 else if(value == 1080)
-                    return dataList.get(dataList.size() - 1081);
+                    return dataList.get(1080);
                 else if(value == 1200)
-                    return dataList.get(dataList.size() - 1201);
+                    return dataList.get(1200);
                 else
                     return "";
             }
@@ -250,34 +226,41 @@ public class ChartUtil {
         return new LineData(dataSet);
     }
 
-    public static LineData getSixMonthsChart(final LineChart chart, final Map<String, StockHistoricalData> data){
+    public static LineData getSixMonthsChart(final LineChart chart, final YahooStockData data){
         if(data == null)
             return null;
 
         final ArrayList<Entry> entries = new ArrayList<>();
         final ArrayList<String> dataList = new ArrayList<>();
 
-        for(String key : data.keySet()){
-            StockHistoricalData quote = data.get(key);
-            LocalDate quoteDate = LocalDate.parse(key,
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        Date lastTradingTime = new Date(data.getChart().getResult().get(0).getTimestamp().get(0) * 1000);
 
-            if(quoteDate.isAfter(LocalDate.now().minusMonths(6))){
-                float price = Float.parseFloat(quote.getClose());
+        for(int i = 0; i <  data.getChart().getResult().get(0).getTimestamp().size(); i++){
+            Long quote = data.getChart().getResult().get(0).getTimestamp().get(i) * 1000;
+            Date quoteDate = new Date(quote);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeZone(TimeZone.getTimeZone("America/Sao_Paulo"));
+
+            if(lastTradingTime.getTime() - quoteDate.getTime()  < 15778458000L){
+
+                if(data.getChart().getResult().get(0).getIndicators().getQuote().get(0).getClose().get(i) == null)
+                    continue;
+
+                float price = Float.parseFloat(data.getChart().getResult().get(0).getIndicators().getQuote().get(0).getClose().get(i).toString());
                 entries.add(new Entry(entries.size(), price));
-                dataList.add(key);
+                calendar.setTimeInMillis(quote + calendar.getTimeZone().getRawOffset());
+                dataList.add(String.format("%d/%d", calendar.getTime().getDay(), calendar.getTime().getMonth()));
+            }
+            else{
+                break;
             }
         }
 
-        final ArrayList<Entry> reverseEntries = new ArrayList<>();
-        for(int j = entries.size() - 1; j >= 0; j--){
-            reverseEntries.add(new Entry(reverseEntries.size(), entries.get(j).getY()));
-        }
-
-        LineDataSet dataSet = new LineDataSet(reverseEntries, "");
+        LineDataSet dataSet = new LineDataSet(entries, "");
         dataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
 
-        if(reverseEntries.get(0).getY() < reverseEntries.get(reverseEntries.size() - 1).getY()){
+        if(Double.parseDouble(data.getChart().getResult().get(0).getMeta().getRegularMarketPrice()) >
+                data.getChart().getResult().get(0).getIndicators().getQuote().get(0).getClose().get(0)){
             dataSet.setColor(Color.argb(255, 0, 127, 0));
             dataSet.setValueTextColor(Color.argb(255, 0, 127, 0));
             dataSet.setFillColor(Color.argb(64, 0,255,0));
@@ -297,6 +280,7 @@ public class ChartUtil {
                 return chart.getAxisLeft().getAxisMinimum();
             }
         });
+        // Controlling X axis
         XAxis xAxis = chart.getXAxis();
         // Set the xAxis position to bottom. Default is top
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
@@ -305,33 +289,32 @@ public class ChartUtil {
             @Override
             public String getFormattedValue(float value) {
                 if(value == 0)
-                    return dataList.get(dataList.size() - 1);
-                else if(value == 12)
-                    return dataList.get(dataList.size() - 13);
-                else if(value == 24)
-                    return dataList.get(dataList.size() - 25);
-                else if(value == 36)
-                    return dataList.get(dataList.size() - 37);
-                else if(value == 48)
-                    return dataList.get(dataList.size() - 49);
-                else if(value == 60)
-                    return dataList.get(dataList.size() - 63);
-                else if(value == 72)
-                    return dataList.get(dataList.size() - 73);
-                else if(value == 84)
-                    return dataList.get(dataList.size() - 85);
-                else if(value == 96)
-                    return dataList.get(dataList.size() - 97);
-                else if(value == 108)
-                    return dataList.get(dataList.size() - 109);
+                    return dataList.get(0);
                 else if(value == 120)
-                    return dataList.get(dataList.size() - 121);
+                    return dataList.get(120);
+                else if(value == 240)
+                    return dataList.get(240);
+                else if(value == 360)
+                    return dataList.get(360);
+                else if(value == 480)
+                    return dataList.get(480);
+                else if(value == 600)
+                    return dataList.get(600);
+                else if(value == 720)
+                    return dataList.get(720);
+                else if(value == 840)
+                    return dataList.get(840);
+                else if(value == 960)
+                    return dataList.get(960);
+                else if(value == 1080)
+                    return dataList.get(1080);
+                else if(value == 1200)
+                    return dataList.get(1200);
                 else
                     return "";
             }
         };
         xAxis.setValueFormatter(formatter);
-        //xAxis.setValueFormatter(formatter);
         xAxis.setGranularity(1f); // minimum axis-step (interval) is 1
         //***
         // Controlling right side of y axis
@@ -345,34 +328,38 @@ public class ChartUtil {
         return new LineData(dataSet);
     }
 
-    public static LineData getMonthChart(final LineChart chart, final Map<String, StockHistoricalData> data){
+    public static LineData getMonthChart(final LineChart chart, final YahooStockData data){
         if(data == null)
             return null;
 
         final ArrayList<Entry> entries = new ArrayList<>();
         final ArrayList<String> dataList = new ArrayList<>();
 
-        for(String key : data.keySet()){
-            StockHistoricalData quote = data.get(key);
-            LocalDate quoteDate = LocalDate.parse(key,
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        Date lastTradingTime = new Date(data.getChart().getResult().get(0).getTimestamp().get(data.getChart().getResult().get(0).getTimestamp().size() - 1) * 1000);
 
-            if(quoteDate.isAfter(LocalDate.now().minusMonths(1))){
-                float price = Float.parseFloat(quote.getClose());
+        for(int i = 0; i <  data.getChart().getResult().get(0).getTimestamp().size(); i++){
+            Long quote = data.getChart().getResult().get(0).getTimestamp().get(i) * 1000;
+            Date quoteDate = new Date(quote);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTimeZone(TimeZone.getTimeZone("America/Sao_Paulo"));
+
+            if(lastTradingTime.getTime() - quoteDate.getTime()  < 2629743000L){
+
+                if(data.getChart().getResult().get(0).getIndicators().getQuote().get(0).getClose().get(i) == null)
+                    continue;
+
+                float price = Float.parseFloat(data.getChart().getResult().get(0).getIndicators().getQuote().get(0).getClose().get(i).toString());
                 entries.add(new Entry(entries.size(), price));
-                dataList.add(key);
+                calendar.setTimeInMillis(quote + calendar.getTimeZone().getRawOffset());
+                dataList.add(String.format("%d/%d", calendar.getTime().getDay(), calendar.getTime().getMonth()));
             }
         }
 
-        final ArrayList<Entry> reverseEntries = new ArrayList<>();
-        for(int j = entries.size() - 1; j >= 0; j--){
-            reverseEntries.add(new Entry(reverseEntries.size(), entries.get(j).getY()));
-        }
-
-        LineDataSet dataSet = new LineDataSet(reverseEntries, "");
+        LineDataSet dataSet = new LineDataSet(entries, "");
         dataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
 
-        if(reverseEntries.get(0).getY() < reverseEntries.get(reverseEntries.size() - 1).getY()){
+        if(Double.parseDouble(data.getChart().getResult().get(0).getMeta().getRegularMarketPrice()) >
+                data.getChart().getResult().get(0).getIndicators().getQuote().get(0).getClose().get(0)){
             dataSet.setColor(Color.argb(255, 0, 127, 0));
             dataSet.setValueTextColor(Color.argb(255, 0, 127, 0));
             dataSet.setFillColor(Color.argb(64, 0,255,0));
@@ -392,27 +379,36 @@ public class ChartUtil {
                 return chart.getAxisLeft().getAxisMinimum();
             }
         });
-        //****
         // Controlling X axis
         XAxis xAxis = chart.getXAxis();
         // Set the xAxis position to bottom. Default is top
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-
+        //Customizing x axis value
         ValueFormatter formatter = new IndexAxisValueFormatter(){
             @Override
             public String getFormattedValue(float value) {
                 if(value == 0)
-                    return dataList.get(dataList.size() - 1);
-                else if(value == 4)
-                    return dataList.get(dataList.size() - 5);
-                else if(value == 8)
-                    return dataList.get(dataList.size() - 9);
-                else if(value == 12)
-                    return dataList.get(dataList.size() - 13);
-                else if(value == 16)
-                    return dataList.get(dataList.size() - 17);
-                else if(value == 20)
-                    return dataList.get(dataList.size() - 21);
+                    return dataList.get(0);
+                else if(value == 120)
+                    return dataList.get(120);
+                else if(value == 240)
+                    return dataList.get(240);
+                else if(value == 360)
+                    return dataList.get(360);
+                else if(value == 480)
+                    return dataList.get(480);
+                else if(value == 600)
+                    return dataList.get(600);
+                else if(value == 720)
+                    return dataList.get(720);
+                else if(value == 840)
+                    return dataList.get(840);
+                else if(value == 960)
+                    return dataList.get(960);
+                else if(value == 1080)
+                    return dataList.get(1080);
+                else if(value == 1200)
+                    return dataList.get(1200);
                 else
                     return "";
             }

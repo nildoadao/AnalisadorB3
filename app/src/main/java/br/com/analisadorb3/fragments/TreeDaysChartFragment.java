@@ -13,22 +13,22 @@ import com.github.mikephil.charting.components.Description;
 import java.util.Map;
 
 import br.com.analisadorb3.R;
-import br.com.analisadorb3.models.StockIntraDayData;
+import br.com.analisadorb3.models.YahooStockData;
 import br.com.analisadorb3.util.ChartUtil;
 
 public class TreeDaysChartFragment extends Fragment {
 
-    private Map<String, StockIntraDayData> intraDayData;
+    private YahooStockData intraDayData;
 
     public TreeDaysChartFragment() {
         // Required empty public constructor
     }
 
-    private void setData(Map<String, StockIntraDayData> data){
+    private void setData(YahooStockData data){
         intraDayData = data;
     }
 
-    public static TreeDaysChartFragment newInstance(Map<String, StockIntraDayData> data){
+    public static TreeDaysChartFragment newInstance(YahooStockData data){
         TreeDaysChartFragment chart = new TreeDaysChartFragment();
         chart.setData(data);
         return chart;

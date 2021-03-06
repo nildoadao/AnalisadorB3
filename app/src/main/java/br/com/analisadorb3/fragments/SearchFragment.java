@@ -2,7 +2,7 @@ package br.com.analisadorb3.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
-import androidx.databinding.DataBindingUtil;
+
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
@@ -27,7 +27,7 @@ import java.util.List;
 import br.com.analisadorb3.R;
 import br.com.analisadorb3.adapters.EmptySearchAdapter;
 import br.com.analisadorb3.adapters.StockSearchAdapter;
-import br.com.analisadorb3.models.StockSearchResult;
+import br.com.analisadorb3.models.YahooStockData;
 import br.com.analisadorb3.util.SettingsUtil;
 import br.com.analisadorb3.viewmodel.StockViewModel;
 
@@ -54,17 +54,17 @@ public class SearchFragment extends Fragment {
 
         adapter.setOnFollowButtonClickListener(new StockSearchAdapter.OnFollowButtonClickListener() {
             @Override
-            public void onFollowButtonClick(StockSearchResult stock) {
-                if(SettingsUtil.getFavouriteStocks(getContext()).contains(stock.getSymbol())){
-                    if(viewModel.unfollowStock(getActivity().getApplication(), stock.getSymbol()))
+            public void onFollowButtonClick(YahooStockData stock) {
+                if(SettingsUtil.getFavouriteStocks(getContext()).contains(stock.getChart().getResult().get(0).getMeta().getSymbol())){
+                    if(viewModel.unfollowStock(getActivity().getApplication(), stock.getChart().getResult().get(0).getMeta().getSymbol()))
                         Toast.makeText(getActivity().getApplication(), getText(R.string.removed), Toast.LENGTH_LONG).show();
                     else
                         Toast.makeText(getActivity().getApplication(), getText(R.string.remove_fail), Toast.LENGTH_LONG).show();
                 }
                 else {
-                    if(viewModel.followStock(getActivity().getApplication(), stock.getSymbol())){
+                    if(viewModel.followStock(getActivity().getApplication(), stock.getChart().getResult().get(0).getMeta().getSymbol())){
                         Toast.makeText(getActivity().getApplication(), getText(R.string.saved), Toast.LENGTH_LONG).show();
-                        viewModel.setSelectedStock(stock.getSymbol());
+                        viewModel.setSelectedStock(stock.getChart().getResult().get(0).getMeta().getSymbol());
                     }
                     else
                         Toast.makeText(getActivity().getApplication(), getText(R.string.stocks_saved_limit), Toast.LENGTH_LONG).show();
@@ -74,8 +74,8 @@ public class SearchFragment extends Fragment {
 
         adapter.setOnItemClickListener(new StockSearchAdapter.OnItemClickListener() {
             @Override
-            public void onItemClick(StockSearchResult stock) {
-                viewModel.setSelectedStock(stock.getSymbol());
+            public void onItemClick(YahooStockData stock) {
+                viewModel.setSelectedStock(stock.getChart().getResult().get(0).getMeta().getSymbol());
                 Navigation.findNavController(getView()).navigate(R.id.stockInfoFragment);
             }
         });
@@ -94,9 +94,9 @@ public class SearchFragment extends Fragment {
             }
         });
 
-        viewModel.getSearchResults().observe(this, new Observer<List<StockSearchResult>>() {
+        viewModel.getSearchResults().observe(this, new Observer<List<YahooStockData>>() {
             @Override
-            public void onChanged(List<StockSearchResult> stockSearchResults) {
+            public void onChanged(List<YahooStockData> stockSearchResults) {
                 if(stockSearchResults == null || stockSearchResults.size() == 0){
                     recyclerView.setAdapter(emptySearchAdapter);
                 }

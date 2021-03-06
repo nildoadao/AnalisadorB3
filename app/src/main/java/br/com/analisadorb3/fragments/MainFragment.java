@@ -29,7 +29,8 @@ import br.com.analisadorb3.R;
 import br.com.analisadorb3.adapters.EmptyWalletAdapter;
 import br.com.analisadorb3.adapters.StockItemAdapter;
 import br.com.analisadorb3.databinding.MainFragmentBinding;
-import br.com.analisadorb3.models.StockRealTimeData;
+import br.com.analisadorb3.models.YahooStockData;
+import br.com.analisadorb3.view.StopFollowDialog;
 import br.com.analisadorb3.viewmodel.MainViewModel;
 
 public class MainFragment extends Fragment {
@@ -74,9 +75,9 @@ public class MainFragment extends Fragment {
             }
         });
 
-        viewModel.getSavedStocks().observe(this, new Observer<List<StockRealTimeData>>() {
+        viewModel.getSavedStocks().observe(this, new Observer<List<YahooStockData>>() {
             @Override
-            public void onChanged(List<StockRealTimeData> stockRealTimeData) {
+            public void onChanged(List<YahooStockData> stockRealTimeData) {
                 if(stockRealTimeData == null){
                     recyclerView.setAdapter(emptyWalletAdapter);
                 }
@@ -103,9 +104,19 @@ public class MainFragment extends Fragment {
             }
 
             @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                viewModel.unfollowStock(adapter.getStockAt(viewHolder.getAdapterPosition()));
-                Toast.makeText(getActivity(), getText(R.string.removed), Toast.LENGTH_SHORT).show();
+            public void onSwiped(@NonNull final RecyclerView.ViewHolder viewHolder, int direction) {
+                StopFollowDialog dialog = StopFollowDialog.newInstance(getString(R.string.stop_follow),
+                        adapter.getStockAt(viewHolder.getAdapterPosition()).getChart().getResult().get(0).getMeta().getSymbol());
+                dialog.setOnDialogFinishListener(new StopFollowDialog.OnDialogFinishListener() {
+                    @Override
+                    public void onDialogFinish(boolean result, String message) {
+                        if(result) {
+                            viewModel.unfollowStock(adapter.getStockAt(viewHolder.getAdapterPosition()));
+                            Toast.makeText(getActivity(), getText(R.string.removed), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+                dialog.show(getFragmentManager(), "");
             }
         }).attachToRecyclerView(recyclerView);
 

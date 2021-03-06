@@ -5,18 +5,14 @@ import android.text.TextUtils;
 
 import androidx.lifecycle.MutableLiveData;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import br.com.analisadorb3.models.HistoricalDataResponse;
-import br.com.analisadorb3.models.IntradayDataResponse;
-import br.com.analisadorb3.models.RealTimeDataResponse;
-import br.com.analisadorb3.models.StockHistoricalData;
-import br.com.analisadorb3.models.StockIntraDayData;
-import br.com.analisadorb3.models.StockRealTimeData;
-import br.com.analisadorb3.models.StockSearchResponse;
-import br.com.analisadorb3.models.StockSearchResult;
+import br.com.analisadorb3.models.YahooStockData;
 import br.com.analisadorb3.util.SettingsUtil;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -24,41 +20,32 @@ import retrofit2.Response;
 
 public class StockRepository {
 
-    private final String WORLD_TRADING_TOKEN = "rwNhIENB5s0xpmzAOzBmyBBW944f8uoBUHkT7qEwVsKRXrzFRmLqpFDEo8Eq";
-    private final String ALPHAVANTAGE_API_KEY = "XC5MVLREL74KNLOR";
-
     private static StockRepository stockRepository;
-    private WorldTradingApi worldTradingApi;
-    private AlphaVantageAPI alphaVantageAPI;
+    private YahooFinanceApi yahooFinanceApi;
     private MutableLiveData<Boolean> refreshing = new MutableLiveData<>();
-    private MutableLiveData<List<StockSearchResult>> searchResults = new MutableLiveData<>();
     private MutableLiveData<List<String>> favouriteStocks = new MutableLiveData<>();
-    private MutableLiveData<StockRealTimeData> selectedStock = new MutableLiveData<>();
-    private MutableLiveData<Map<String, StockHistoricalData>> dailyData = new MutableLiveData<>();
-    private MutableLiveData<Map<String, StockIntraDayData>> intraDayData = new MutableLiveData<>();
-    private MutableLiveData<List<StockRealTimeData>> savedStocks = new MutableLiveData<>();
-
-    public MutableLiveData<List<StockSearchResult>> getSearchResults() {
-        return searchResults;
-    }
+    private MutableLiveData<YahooStockData> selectedStock = new MutableLiveData<>();
+    private MutableLiveData<YahooStockData> dailyData = new MutableLiveData<>();
+    private MutableLiveData<YahooStockData> intraDayData = new MutableLiveData<>();
+    private MutableLiveData<List<YahooStockData>> savedStocks = new MutableLiveData<>();
 
     public MutableLiveData<List<String>> getFavouriteStocks() {
         return favouriteStocks;
     }
 
-    public MutableLiveData<StockRealTimeData> getSelectedStock() {
+    public MutableLiveData<YahooStockData> getSelectedStock() {
         return selectedStock;
     }
 
-    public MutableLiveData<Map<String, StockHistoricalData>> getDailyData() {
+    public MutableLiveData<YahooStockData> getDailyData() {
         return dailyData;
     }
 
-    public MutableLiveData<Map<String, StockIntraDayData>> getIntraDayData() {
+    public MutableLiveData<YahooStockData> getIntraDayData() {
         return intraDayData;
     }
 
-    public MutableLiveData<List<StockRealTimeData>> getSavedStocks(){
+    public MutableLiveData<List<YahooStockData>> getSavedStocks(){
         return savedStocks;
     }
 
@@ -70,8 +57,10 @@ public class StockRepository {
     }
 
     public StockRepository(){
-        worldTradingApi = RetrofitService.createService(WorldTradingApi.class);
-        alphaVantageAPI = RetrofitService.createIntradayService(AlphaVantageAPI.class);
+        yahooFinanceApi = RetrofitService.createService(YahooFinanceApi.class);
+        savedStocks.setValue(new ArrayList<YahooStockData>());
+        intraDayData.setValue(new YahooStockData());
+        dailyData.setValue(new YahooStockData());
         refreshing.setValue(false);
     }
 
@@ -82,6 +71,7 @@ public class StockRepository {
     public boolean unfollowStock(Context context, String symbol){
         boolean result =  SettingsUtil.removeFavouriteStock(context, symbol);
         favouriteStocks.postValue(SettingsUtil.getFavouriteStocks(context));
+        updateSavedStocks(SettingsUtil.getFavouriteStocks(context));
         return result;
     }
 
@@ -97,117 +87,105 @@ public class StockRepository {
     }
 
     public void updateSavedStocks(List<String> symbols){
-        updateSavedStocks(TextUtils.join(",", symbols));
+        refreshing.postValue(true);
+        final List<YahooStockData> updatedStocks = new ArrayList<>();
+        if(symbols != null && symbols.size() > 0){
+
+            for(String symbol : symbols){
+                yahooFinanceApi.getStock(symbol, "5m", "1d")
+                        .enqueue(new Callback<YahooStockData>() {
+                            @Override
+                            public void onResponse(Call<YahooStockData> call, Response<YahooStockData> response) {
+                                if(!response.isSuccessful()){
+                                    refreshing.postValue(false);
+                                    return;
+                                }
+                                updatedStocks.add(response.body());
+                                savedStocks.postValue(updatedStocks);
+                                refreshing.postValue(false);
+                            }
+
+                            @Override
+                            public void onFailure(Call<YahooStockData> call, Throwable t) {
+                                refreshing.postValue(false);
+                                // TODO handle errors
+                            }
+                        });
+            }
+        }
+        else {
+            savedStocks.postValue(null);
+            refreshing.postValue(false);
+        }
     }
 
-    public void updateSelectedStock(String symbol){
-        worldTradingApi.getLastQuote(symbol, WORLD_TRADING_TOKEN)
-                .enqueue(new Callback<RealTimeDataResponse>() {
+    public void updateSelectedStock(String symbol, String interval, String range){
+        refreshing.postValue(true);
+        yahooFinanceApi.getStock(symbol, interval, range)
+                .enqueue(new Callback<YahooStockData>() {
                     @Override
-                    public void onResponse(Call<RealTimeDataResponse> call, Response<RealTimeDataResponse> response) {
+                    public void onResponse(Call<YahooStockData> call, Response<YahooStockData> response) {
                         if(!response.isSuccessful()){
                             selectedStock.postValue(null);
+                            refreshing.postValue(false);
                             return;
                         }
-                        selectedStock.postValue(response.body().getData().get(0));
+                        selectedStock.postValue(response.body());
+                        refreshing.postValue(false);
                     }
 
                     @Override
-                    public void onFailure(Call<RealTimeDataResponse> call, Throwable t) {
+                    public void onFailure(Call<YahooStockData> call, Throwable t) {
+                        refreshing.postValue(false);
                         // TODO handle errors
-                        selectedStock.postValue(null);
-                }
-                });
-    }
-
-    public void updateSavedStocks(String symbol){
-        refreshing.setValue(true);
-        worldTradingApi.getLastQuote(symbol, WORLD_TRADING_TOKEN)
-                .enqueue(new Callback<RealTimeDataResponse>() {
-                    @Override
-                    public void onResponse(Call<RealTimeDataResponse> call, Response<RealTimeDataResponse> response) {
-                        if(!response.isSuccessful()){
-                            refreshing.setValue(false);
-                            savedStocks.postValue(null);
-                            return;
-                        }
-                        savedStocks.postValue(response.body().getData());
-                        refreshing.setValue(false);
-                    }
-
-                    @Override
-                    public void onFailure(Call<RealTimeDataResponse> call, Throwable t) {
-                        // TODO handle errors
-                        savedStocks.postValue(null);
-                        refreshing.setValue(false);
                     }
                 });
     }
 
-    public void getDailyTimeSeries(String symbol, String dateFrom, String dateTo){
-        refreshing.setValue(true);
-        worldTradingApi.getDailyTimeSeries(symbol, WORLD_TRADING_TOKEN, "newest", dateFrom, dateTo)
-                .enqueue(new Callback<HistoricalDataResponse>() {
+    public void getDailyTimeSeries(String symbol, String days){
+        refreshing.postValue(true);
+        yahooFinanceApi.getStock(symbol, "1d    ", days)
+                .enqueue(new Callback<YahooStockData>() {
                     @Override
-                    public void onResponse(Call<HistoricalDataResponse> call, Response<HistoricalDataResponse> response) {
+                    public void onResponse(Call<YahooStockData> call, Response<YahooStockData> response) {
                         if(!response.isSuccessful()){
                             dailyData.postValue(null);
+                            refreshing.postValue(false);
                             return;
                         }
-                        dailyData.postValue(response.body().getHistory());
-                        refreshing.setValue(false);
+                        dailyData.postValue(response.body());
+                        refreshing.postValue(false);
                     }
 
                     @Override
-                    public void onFailure(Call<HistoricalDataResponse> call, Throwable t) {
+                    public void onFailure(Call<YahooStockData> call, Throwable t) {
+                        // TODO handle errors
                         dailyData.postValue(null);
-                        refreshing.setValue(false);
-                        // TODO handle errors
-                    }
-                });
-    }
-
-    public void searchStock(String searchTerm){
-        refreshing.setValue(true);
-        worldTradingApi.searchStock(searchTerm, WORLD_TRADING_TOKEN)
-                .enqueue(new Callback<StockSearchResponse>() {
-                    @Override
-                    public void onResponse(Call<StockSearchResponse> call, Response<StockSearchResponse> response) {
-                        if(!response.isSuccessful()){
-                            refreshing.setValue(false);
-                            searchResults.postValue(null);
-                            return;
-                        }
-                        searchResults.postValue(response.body().getData());
-                        refreshing.setValue(false);
-                    }
-
-                    @Override
-                    public void onFailure(Call<StockSearchResponse> call, Throwable t) {
-                        // TODO handle errors
-                        searchResults.postValue(null);
-                        refreshing.setValue(false);
+                        refreshing.postValue(false);
                     }
                 });
     }
 
     public void getIntraDayTimeSeries(String symbol){
-        alphaVantageAPI.getIntradayData("TIME_SERIES_INTRADAY", "1min",
-                symbol, ALPHAVANTAGE_API_KEY, "full")
-                .enqueue(new Callback<IntradayDataResponse>(){
+        refreshing.postValue(true);
+        yahooFinanceApi.getStock(symbol, "1m", "1d")
+                .enqueue(new Callback<YahooStockData>() {
                     @Override
-                    public void onFailure(Call<IntradayDataResponse> call, Throwable t) {
-                        // TODO handle errors
-                        intraDayData.postValue(null);
+                    public void onResponse(Call<YahooStockData> call, Response<YahooStockData> response) {
+                        if(!response.isSuccessful()){
+                            intraDayData.postValue(null);
+                            refreshing.postValue(false);
+                            return;
+                        }
+                        intraDayData.postValue(response.body());
+                        refreshing.postValue(false);
                     }
 
                     @Override
-                    public void onResponse(Call<IntradayDataResponse> call, Response<IntradayDataResponse> response) {
-                        if(!response.isSuccessful()){
-                            intraDayData.postValue(null);
-                            return;
-                        }
-                        intraDayData.postValue(response.body().getTimeSeries());
+                    public void onFailure(Call<YahooStockData> call, Throwable t) {
+                        // TODO handle errors
+                        intraDayData.postValue(null);
+                        refreshing.postValue(false);
                     }
                 });
     }

@@ -14,26 +14,26 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import br.com.analisadorb3.R;
-import br.com.analisadorb3.models.StockRealTimeData;
+import br.com.analisadorb3.models.YahooStockData;
 
-public class StockItemAdapter extends ListAdapter<StockRealTimeData, StockItemAdapter.StockItemHolder> {
+public class StockItemAdapter extends ListAdapter<YahooStockData, StockItemAdapter.StockItemHolder> {
 
     public StockItemAdapter() {
         super(DIFF_CALLBACK);
     }
 
-    private static final DiffUtil.ItemCallback<StockRealTimeData> DIFF_CALLBACK = new DiffUtil.ItemCallback<StockRealTimeData>() {
+    private static final DiffUtil.ItemCallback<YahooStockData> DIFF_CALLBACK = new DiffUtil.ItemCallback<YahooStockData>() {
         @Override
-        public boolean areItemsTheSame(@NonNull StockRealTimeData oldItem, @NonNull StockRealTimeData newItem) {
-            return oldItem.getSymbol().equals(newItem.getSymbol());
+        public boolean areItemsTheSame(@NonNull YahooStockData oldItem, @NonNull YahooStockData newItem) {
+            return oldItem.getChart().getResult().get(0).getMeta().getSymbol().equals(newItem.getChart().getResult().get(0).getMeta().getSymbol());
         }
 
         @Override
-        public boolean areContentsTheSame(@NonNull StockRealTimeData oldItem, @NonNull StockRealTimeData newItem) {
-            return oldItem.getSymbol().equals(newItem.getSymbol()) &&
-                    oldItem.getName().equals(newItem.getName()) &&
-                    oldItem.getPrice().equals(newItem.getPrice()) &&
-                    oldItem.getCurrency().equals(newItem.getCurrency());
+        public boolean areContentsTheSame(@NonNull YahooStockData oldItem, @NonNull YahooStockData newItem) {
+            return oldItem.getChart().getResult().get(0).getMeta().getSymbol().equals(newItem.getChart().getResult().get(0).getMeta().getSymbol()) &&
+                    oldItem.getChart().getResult().get(0).getMeta().getSymbol().equals(newItem.getChart().getResult().get(0).getMeta().getSymbol()) &&
+                    oldItem.getChart().getResult().get(0).getMeta().getSymbol().equals(newItem.getChart().getResult().get(0).getMeta().getSymbol()) &&
+                    oldItem.getChart().getResult().get(0).getMeta().getSymbol().equals(newItem.getChart().getResult().get(0).getMeta().getSymbol());
         }
     };
 
@@ -66,7 +66,7 @@ public class StockItemAdapter extends ListAdapter<StockRealTimeData, StockItemAd
 
     private OnItemClickListener clickListener;
 
-    public StockRealTimeData getStockAt(int position){
+    public YahooStockData getStockAt(int position){
         return getItem(position);
     }
 
@@ -88,19 +88,25 @@ public class StockItemAdapter extends ListAdapter<StockRealTimeData, StockItemAd
 
     @Override
     public void onBindViewHolder(@NonNull StockItemHolder holder, int position) {
-        StockRealTimeData currentStock = getItem(position);
-        holder.stockName.setText(currentStock.getName());
-        String priceText = String.format("%s %s", currentStock.getPrice(),
-                currentStock.getCurrency());
+        YahooStockData currentStock = getItem(position);
+        holder.stockName.setText(currentStock.getChart().getResult().get(0).getMeta().getSymbol());
+        String priceText = String.format("%s %s", currentStock.getChart().getResult().get(0).getMeta().getRegularMarketPrice(),
+                currentStock.getChart().getResult().get(0).getMeta().getCurrency());
         holder.stockPrice.setText(priceText);
-        holder.stockSymbol.setText(currentStock.getSymbol());
-        String changeText = String.format("%s (%s",
-                currentStock.getDayChange(), currentStock.getChangePercent()) + "%)";
+        holder.stockSymbol.setText(currentStock.getChart().getResult().get(0).getMeta().getSymbol());
+
+        Double dayChange = Double.parseDouble(currentStock.getChart().getResult().get(0).getMeta().getRegularMarketPrice())
+                - Double.parseDouble(currentStock.getChart().getResult().get(0).getMeta().getPreviousClose());
+
+        Double dayChangePercent = dayChange / Double.parseDouble(currentStock.getChart().getResult().get(0).getMeta().getRegularMarketPrice()) * 100;
+
+        String changeText = String.format("%.2f (%.2f",
+                dayChange, dayChangePercent) + "%)";
         holder.stockChangePercent.setText(changeText);
 
         Double change;
         try {
-            change = Double.parseDouble(currentStock.getDayChange());
+            change = dayChange;
         }
         catch (Exception e){
             change = null;

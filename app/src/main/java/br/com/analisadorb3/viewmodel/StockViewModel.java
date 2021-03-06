@@ -17,12 +17,9 @@ import java.util.Map;
 
 import br.com.analisadorb3.R;
 import br.com.analisadorb3.api.StockRepository;
-import br.com.analisadorb3.models.StockHistoricalData;
-import br.com.analisadorb3.models.StockIntraDayData;
-import br.com.analisadorb3.models.StockRealTimeData;
-import br.com.analisadorb3.models.StockSearchResult;
+import br.com.analisadorb3.models.YahooStockData;
 import br.com.analisadorb3.util.SettingsUtil;
-import br.com.analisadorb3.util.StockUtil;
+
 
 public class StockViewModel extends AndroidViewModel {
 
@@ -39,6 +36,7 @@ public class StockViewModel extends AndroidViewModel {
     private ObservableField<String> volume = new ObservableField<>();
     private ObservableField<String> threeMonthsAverageChange = new ObservableField<>();
     private ObservableField<Drawable> followButtonImage = new ObservableField<>();
+    private MutableLiveData<List<YahooStockData>> searchResults = new MutableLiveData<>();
 
     public StockViewModel(@NonNull Application application) {
         super(application);
@@ -49,23 +47,19 @@ public class StockViewModel extends AndroidViewModel {
         return repository.isRefreshing();
     }
 
-    public MutableLiveData<Map<String, StockIntraDayData>> getIntraDayData(){
+    public MutableLiveData<YahooStockData> getIntraDayData(){
         return repository.getIntraDayData();
     }
 
-    public MutableLiveData<Map<String, StockHistoricalData>> getDailyData() {
+    public MutableLiveData<YahooStockData> getDailyData() {
         return repository.getDailyData();
-    }
-
-    public MutableLiveData<List<StockSearchResult>> getSearchResults(){
-        return repository.getSearchResults();
     }
 
     public MutableLiveData<List<String>> getFavouriteStocks(){
         return repository.getFavouriteStocks();
     }
 
-    public MutableLiveData<StockRealTimeData> getSelectedStock(){
+    public MutableLiveData<YahooStockData> getSelectedStock(){
         return repository.getSelectedStock();
     }
 
@@ -105,6 +99,10 @@ public class StockViewModel extends AndroidViewModel {
         return stockPrice;
     }
 
+    public MutableLiveData<List<YahooStockData>> getSearchResults() {
+        return searchResults;
+    }
+
     public ObservableField<String> getStockChangePercent(){
         return stockChangePercent;
     }
@@ -134,45 +132,43 @@ public class StockViewModel extends AndroidViewModel {
         return repository.unfollowStock(context, symbol);
     }
 
+    public void search(String searchTerm){}
+
     public void setSelectedStock(String symbol){
         repository.clearStockHistory();
         SettingsUtil.setSelectedSymbol(getApplication(), symbol);
-        repository.updateSelectedStock(symbol);
-    }
-
-    public void search(String searchTerm){
-        repository.searchStock(searchTerm);
+        repository.updateSelectedStock(symbol, "1m", "1d");
     }
 
     public void updateView(){
-        stockSymbol.set(getSelectedStock().getValue().getSymbol());
-        stockCompany.set(getSelectedStock().getValue().getName());
-        stockPrice.set(getPrice());
-        stockChangePercent.set(getChangeText());
-        changeTextColor.set(calculateChangeTextColor());
-        lastClose.set(getSelectedStock().getValue().getCloseYesterday());
-        open.set(getSelectedStock().getValue().getPriceOpen());
-        low.set(getSelectedStock().getValue().getDayLow());
-        high.set(getSelectedStock().getValue().getDayHigh());
-        volume.set(getVolumeText());
-        threeMonthsAverageChange.set(getThreeMonthsVariation());
-        followButtonImage.set(getStockFollowStatusImage());
+        if(getSelectedStock().getValue() != null){
+            stockSymbol.set(getSelectedStock().getValue().getChart().getResult().get(0).getMeta().getSymbol());
+            stockCompany.set(getSelectedStock().getValue().getChart().getResult().get(0).getMeta().getExchangeName());
+            stockPrice.set(getPrice());
+            stockChangePercent.set(getChangeText());
+            changeTextColor.set(calculateChangeTextColor());
+            lastClose.set(getSelectedStock().getValue().getChart().getResult().get(0).getMeta().getPreviousClose());
+            open.set(getSelectedStock().getValue().getChart().getResult().get(0).getMeta().getRegularMarketPrice());
+            low.set(String.format("%.2f", getSelectedStock().getValue().getChart().getResult().get(0).getIndicators().getQuote().get(0).getLow().get(0)));
+            high.set(String.format("%.2f",  getSelectedStock().getValue().getChart().getResult().get(0).getIndicators().getQuote().get(0).getHigh().get(0)));
+            volume.set(getVolumeText());
+            threeMonthsAverageChange.set(getThreeMonthsVariation());
+            followButtonImage.set(getStockFollowStatusImage());
+        }
     }
 
     public void fetchData(){
         String selectedSymbol = SettingsUtil.getSelectedSymbol(getApplication());
-        repository.updateSelectedStock(selectedSymbol);
-        LocalDate today = LocalDate.now();
-        repository.getDailyTimeSeries(selectedSymbol,
-                today.minusMonths(6).toString(), today.toString());
+        repository.updateSelectedStock(selectedSymbol, "1m", "1d");
+        repository.getDailyTimeSeries(selectedSymbol, "6mo");
         repository.getIntraDayTimeSeries(selectedSymbol);
     }
 
     public String getPrice(){
-        StockRealTimeData selectedStock = getSelectedStock().getValue();
+        YahooStockData selectedStock = getSelectedStock().getValue();
         if(selectedStock != null){
-            String price = selectedStock.getPrice();
-            String currency = selectedStock.getCurrency();
+            String price = selectedStock.getChart().getResult().get(0).getMeta().getRegularMarketPrice();
+            String currency = selectedStock.getChart().getResult().get(0).getMeta().getCurrency();
             return String.format("%s %s", price, currency);
         }
         return "";
@@ -181,20 +177,23 @@ public class StockViewModel extends AndroidViewModel {
     private String getVolumeText(){
         Double volume;
         try {
-            volume = Double.parseDouble(getSelectedStock().getValue().getVolume());
+            volume = Double.parseDouble(getSelectedStock().getValue().getChart().getResult()
+                    .get(0).getIndicators().getQuote().get(0).getVolume().get(0).toString());
         }
         catch (Exception e){
             volume = 0d;
         }
-        return StockUtil.volumePrettify(volume);
+        return volume.toString();
     }
 
     public String getChangeText(){
-        StockRealTimeData selectedStock = getSelectedStock().getValue();
+        YahooStockData selectedStock = getSelectedStock().getValue();
         if(selectedStock != null){
-            String valueChange = selectedStock.getDayChange();
-            String changePercent = selectedStock.getChangePercent();
-            return String.format("%s (%s", valueChange, changePercent)
+            Double dayChange = Double.parseDouble(getSelectedStock().getValue().getChart().getResult().get(0).getMeta().getRegularMarketPrice())
+                    - Double.parseDouble(getSelectedStock().getValue().getChart().getResult().get(0).getMeta().getPreviousClose());
+            Double dayPercentChange =  dayChange /
+                    Double.parseDouble(getSelectedStock().getValue().getChart().getResult().get(0).getMeta().getRegularMarketPrice()) * 100;
+            return String.format("%.2f (%.2f", dayChange, dayPercentChange)
                     + "%)";
         }
         return "";
@@ -204,7 +203,8 @@ public class StockViewModel extends AndroidViewModel {
 
         Double dayChange;
         try {
-            dayChange = Double.parseDouble(getSelectedStock().getValue().getDayChange());
+            dayChange = Double.parseDouble(getSelectedStock().getValue().getChart().getResult().get(0).getMeta().getRegularMarketPrice())
+            - Double.parseDouble(getSelectedStock().getValue().getChart().getResult().get(0).getMeta().getPreviousClose());
         }
         catch (Exception e){
             dayChange = 0d;
@@ -217,7 +217,7 @@ public class StockViewModel extends AndroidViewModel {
     }
 
     public String getThreeMonthsVariation(){
-        Double averageChange = StockUtil.getAverageVariation(getDailyData().getValue(), 6);
+        Double averageChange = 0d;
         return String.format("%.2f", averageChange);
     }
 }

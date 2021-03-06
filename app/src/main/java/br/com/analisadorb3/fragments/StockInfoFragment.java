@@ -1,7 +1,6 @@
 package br.com.analisadorb3.fragments;
 
 import androidx.databinding.DataBindingUtil;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
@@ -22,14 +21,10 @@ import android.widget.Toast;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 
-import java.util.Map;
-
 import br.com.analisadorb3.R;
 import br.com.analisadorb3.adapters.StockChartAdapter;
 import br.com.analisadorb3.databinding.StockInfoFragmentBinding;
-import br.com.analisadorb3.models.StockHistoricalData;
-import br.com.analisadorb3.models.StockIntraDayData;
-import br.com.analisadorb3.models.StockRealTimeData;
+import br.com.analisadorb3.models.YahooStockData;
 import br.com.analisadorb3.util.SettingsUtil;
 import br.com.analisadorb3.viewmodel.StockViewModel;
 
@@ -54,8 +49,8 @@ public class StockInfoFragment extends Fragment {
 
         final ViewPager viewPager = getView().findViewById(R.id.chart_view_pager);
         chartAdapter = new StockChartAdapter(getContext(), getFragmentManager());
-        Map<String, StockIntraDayData> intraDayData = mViewModel.getIntraDayData().getValue();
-        Map<String, StockHistoricalData> dailyData = mViewModel.getDailyData().getValue();
+        YahooStockData intraDayData = mViewModel.getIntraDayData().getValue();
+        YahooStockData dailyData = mViewModel.getDailyData().getValue();
         chartAdapter.setIntraDayData(intraDayData);
         chartAdapter.setDailyData(dailyData);
         viewPager.setAdapter(chartAdapter);
@@ -69,24 +64,24 @@ public class StockInfoFragment extends Fragment {
             }
         });
 
-        mViewModel.getSelectedStock().observe(this, new Observer<StockRealTimeData>() {
+        mViewModel.getSelectedStock().observe(this, new Observer<YahooStockData>() {
             @Override
-            public void onChanged(StockRealTimeData stockRealTimeData) {
+            public void onChanged(YahooStockData stockRealTimeData) {
                 mViewModel.updateView();
             }
         });
 
-        mViewModel.getIntraDayData().observe(this, new Observer<Map<String, StockIntraDayData>>() {
+        mViewModel.getIntraDayData().observe(this, new Observer<YahooStockData>() {
             @Override
-            public void onChanged(Map<String, StockIntraDayData> stringStockIntraDayDataMap) {
+            public void onChanged(YahooStockData stringStockIntraDayDataMap) {
                 chartAdapter.setIntraDayData(stringStockIntraDayDataMap);
                 viewPager.setAdapter(chartAdapter);
             }
         });
 
-        mViewModel.getDailyData().observe(this, new Observer<Map<String, StockHistoricalData>>() {
+        mViewModel.getDailyData().observe(this, new Observer<YahooStockData>() {
             @Override
-            public void onChanged(Map<String, StockHistoricalData> maps) {
+            public void onChanged(YahooStockData maps) {
                 chartAdapter.setDailyData(maps);
                 viewPager.setAdapter(chartAdapter);
 

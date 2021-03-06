@@ -12,25 +12,25 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import br.com.analisadorb3.R;
-import br.com.analisadorb3.models.StockSearchResult;
+import br.com.analisadorb3.models.YahooStockData;
 import br.com.analisadorb3.util.SettingsUtil;
 
-public class StockSearchAdapter extends ListAdapter<StockSearchResult, StockSearchAdapter.SearchResultHolder> {
+public class StockSearchAdapter extends ListAdapter<YahooStockData, StockSearchAdapter.SearchResultHolder> {
 
     public StockSearchAdapter() {
         super(DIFF_CALLBACK);
     }
 
-    private static final DiffUtil.ItemCallback<StockSearchResult> DIFF_CALLBACK = new DiffUtil.ItemCallback<StockSearchResult>() {
+    private static final DiffUtil.ItemCallback<YahooStockData> DIFF_CALLBACK = new DiffUtil.ItemCallback<YahooStockData>() {
         @Override
-        public boolean areItemsTheSame(@NonNull StockSearchResult oldItem, @NonNull StockSearchResult newItem) {
-            return oldItem.getSymbol().equals(newItem.getSymbol());
+        public boolean areItemsTheSame(@NonNull YahooStockData oldItem, @NonNull YahooStockData newItem) {
+            return oldItem.getChart().getResult().get(0).getMeta().getSymbol().equals(newItem.getChart().getResult().get(0).getMeta().getSymbol());
         }
 
         @Override
-        public boolean areContentsTheSame(@NonNull StockSearchResult oldItem, @NonNull StockSearchResult newItem) {
-            return oldItem.getSymbol().equals(newItem.getSymbol()) &&
-                    oldItem.getName().equals(newItem.getName());
+        public boolean areContentsTheSame(@NonNull YahooStockData oldItem, @NonNull YahooStockData newItem) {
+            return oldItem.getChart().getResult().get(0).getMeta().getSymbol().equals(newItem.getChart().getResult().get(0).getMeta().getSymbol()) &&
+                    oldItem.getChart().getResult().get(0).getMeta().getSymbol().equals(newItem.getChart().getResult().get(0).getMeta().getSymbol());
         }
     };
 
@@ -56,11 +56,11 @@ public class StockSearchAdapter extends ListAdapter<StockSearchResult, StockSear
     }
 
     public interface OnItemClickListener{
-        void onItemClick(StockSearchResult stock);
+        void onItemClick(YahooStockData stock);
     }
 
     public interface OnFollowButtonClickListener{
-        void onFollowButtonClick(StockSearchResult stock);
+        void onFollowButtonClick(YahooStockData stock);
     }
 
     private OnItemClickListener clickListener;
@@ -84,10 +84,10 @@ public class StockSearchAdapter extends ListAdapter<StockSearchResult, StockSear
 
     @Override
     public void onBindViewHolder(@NonNull SearchResultHolder holder, final int position) {
-        StockSearchResult currentStock = getItem(position);
-        holder.symbolTextView.setText(currentStock.getSymbol());
-        holder.companyTextView.setText(currentStock.getName());
-        if(SettingsUtil.getFavouriteStocks(holder.statusButton.getContext()).contains(currentStock.getSymbol()))
+        YahooStockData currentStock = getItem(position);
+        holder.symbolTextView.setText(currentStock.getChart().getResult().get(0).getMeta().getSymbol());
+        holder.companyTextView.setText(currentStock.getChart().getResult().get(0).getMeta().getSymbol());
+        if(SettingsUtil.getFavouriteStocks(holder.statusButton.getContext()).contains(currentStock.getChart().getResult().get(0).getMeta().getSymbol()))
             holder.statusButton.setImageResource(R.drawable.star_icon);
         else
             holder.statusButton.setImageResource(R.drawable.plus_icon);

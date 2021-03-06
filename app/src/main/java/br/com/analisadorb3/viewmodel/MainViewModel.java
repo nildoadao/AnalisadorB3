@@ -8,7 +8,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import java.util.List;
 import br.com.analisadorb3.api.StockRepository;
-import br.com.analisadorb3.models.StockRealTimeData;
+import br.com.analisadorb3.models.YahooStockData;
 import br.com.analisadorb3.util.SettingsUtil;
 
 public class MainViewModel extends AndroidViewModel {
@@ -28,11 +28,11 @@ public class MainViewModel extends AndroidViewModel {
         return repository.getFavouriteStocks();
     }
 
-    public void unfollowStock(StockRealTimeData stock){
-        repository.unfollowStock(getApplication(), stock.getSymbol());
+    public void unfollowStock(YahooStockData stock){
+        repository.unfollowStock(getApplication(), stock.getChart().getResult().get(0).getMeta().getSymbol());
     }
 
-    public MutableLiveData<List<StockRealTimeData>> getSavedStocks(){
+    public MutableLiveData<List<YahooStockData>> getSavedStocks(){
         return repository.getSavedStocks();
     }
 
@@ -40,8 +40,9 @@ public class MainViewModel extends AndroidViewModel {
         repository.updateSavedStocks(SettingsUtil.getFavouriteStocks(getApplication()));
     }
 
-    public void setSelectedStock(StockRealTimeData stock){
+    public void setSelectedStock(YahooStockData stock){
         repository.clearStockHistory();
-        SettingsUtil.setSelectedSymbol(getApplication(), stock.getSymbol());
+        SettingsUtil.setSelectedSymbol(getApplication(), stock.getChart().getResult().get(0).getMeta().getSymbol());
+        repository.updateSelectedStock(stock.getChart().getResult().get(0).getMeta().getSymbol(), "1m", "1d");
     }
 }

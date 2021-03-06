@@ -5,21 +5,13 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitService {
 
-    private static Retrofit basicRetrofit = new Retrofit.Builder()
-            .baseUrl("https://api.worldtradingdata.com/api/v1/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build();
-
-    private static Retrofit intradayRetrofit = new Retrofit.Builder()
-            .baseUrl("https://www.alphavantage.co/")
+    private static Retrofit retrofit = new Retrofit.Builder()
+            .baseUrl("https://query1.finance.yahoo.com/v8/finance/")
             .addConverterFactory(GsonConverterFactory.create())
             .build();
 
     public static <S> S createService(Class<S> serviceClass){
-        return basicRetrofit.create(serviceClass);
+        return retrofit.create(serviceClass);
     }
 
-    public static <S> S createIntradayService(Class<S> serviceClass){
-        return intradayRetrofit.create(serviceClass);
-    }
 }
