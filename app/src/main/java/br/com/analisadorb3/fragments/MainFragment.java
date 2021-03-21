@@ -106,13 +106,18 @@ public class MainFragment extends Fragment {
             @Override
             public void onSwiped(@NonNull final RecyclerView.ViewHolder viewHolder, int direction) {
                 StopFollowDialog dialog = StopFollowDialog.newInstance(getString(R.string.stop_follow),
-                        adapter.getStockAt(viewHolder.getAdapterPosition()).getChart().getResult().get(0).getMeta().getSymbol());
+                adapter.getStockAt(viewHolder.getAdapterPosition()).getChart().getResult().get(0).getMeta().getSymbol());
                 dialog.setOnDialogFinishListener(new StopFollowDialog.OnDialogFinishListener() {
                     @Override
                     public void onDialogFinish(boolean result, String message) {
                         if(result) {
                             viewModel.unfollowStock(adapter.getStockAt(viewHolder.getAdapterPosition()));
                             Toast.makeText(getActivity(), getText(R.string.removed), Toast.LENGTH_SHORT).show();
+                            adapter.submitList(viewModel.getSavedStocks().getValue());
+                            adapter.notifyDataSetChanged();
+                        }
+                        else {
+                            adapter.notifyDataSetChanged();
                         }
                     }
                 });

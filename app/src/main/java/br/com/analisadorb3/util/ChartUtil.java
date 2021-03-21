@@ -139,7 +139,7 @@ public class ChartUtil {
             Calendar calendar = Calendar.getInstance();
             calendar.setTimeZone(TimeZone.getTimeZone("America/Sao_Paulo"));
 
-            if(lastTradingTime.compareTo(quoteDate) >= -3){
+            if(lastTradingTime.getTime() - quoteDate.getTime()  < 259200000L){
 
                 if(data.getChart().getResult().get(0).getIndicators().getQuote().get(0).getClose().get(i) == null)
                     continue;

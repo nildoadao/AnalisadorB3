@@ -11,6 +11,7 @@ import androidx.databinding.ObservableInt;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,7 @@ public class StockViewModel extends AndroidViewModel {
     private ObservableField<String> volume = new ObservableField<>();
     private ObservableField<String> threeMonthsAverageChange = new ObservableField<>();
     private ObservableField<Drawable> followButtonImage = new ObservableField<>();
-    private MutableLiveData<List<YahooStockData>> searchResults = new MutableLiveData<>();
+
 
     public StockViewModel(@NonNull Application application) {
         super(application);
@@ -99,8 +100,8 @@ public class StockViewModel extends AndroidViewModel {
         return stockPrice;
     }
 
-    public MutableLiveData<List<YahooStockData>> getSearchResults() {
-        return searchResults;
+    public MutableLiveData<YahooStockData> getSearchResults() {
+        return repository.getSearchResult();
     }
 
     public ObservableField<String> getStockChangePercent(){
@@ -132,7 +133,9 @@ public class StockViewModel extends AndroidViewModel {
         return repository.unfollowStock(context, symbol);
     }
 
-    public void search(String searchTerm){}
+    public void search(String searchTerm){
+        repository.searchStockBySymbol(searchTerm);
+    }
 
     public void setSelectedStock(String symbol){
         repository.clearStockHistory();
@@ -149,8 +152,8 @@ public class StockViewModel extends AndroidViewModel {
             changeTextColor.set(calculateChangeTextColor());
             lastClose.set(getSelectedStock().getValue().getChart().getResult().get(0).getMeta().getPreviousClose());
             open.set(getSelectedStock().getValue().getChart().getResult().get(0).getMeta().getRegularMarketPrice());
-            low.set(String.format("%.2f", getSelectedStock().getValue().getChart().getResult().get(0).getIndicators().getQuote().get(0).getLow().get(0)));
-            high.set(String.format("%.2f",  getSelectedStock().getValue().getChart().getResult().get(0).getIndicators().getQuote().get(0).getHigh().get(0)));
+            low.set(getDayLow());
+            high.set(getDayHigh());
             volume.set(getVolumeText());
             threeMonthsAverageChange.set(getThreeMonthsVariation());
             followButtonImage.set(getStockFollowStatusImage());
@@ -164,6 +167,33 @@ public class StockViewModel extends AndroidViewModel {
         repository.getIntraDayTimeSeries(selectedSymbol);
     }
 
+    public String getDayLow(){
+        YahooStockData data = repository.getSelectedStock().getValue();
+        List<Double> values = data.getChart().getResult().get(0).getIndicators().getQuote().get(0).getLow();
+        Double dayLow = values.get(0);
+
+        for(int i = 0; i < values.size(); i++){
+            if(values.get(i) != null && values.get(i) < dayLow){
+                dayLow = values.get(i);
+            }
+        }
+
+        return String.format("%.2f", dayLow);
+    }
+
+    public String getDayHigh(){
+        YahooStockData data = repository.getSelectedStock().getValue();
+        List<Double> values = data.getChart().getResult().get(0).getIndicators().getQuote().get(0).getLow();
+        Double dayHigh = values.get(0);
+
+        for(int i = 0; i < values.size(); i++){
+            if(values.get(i) != null && values.get(i) > dayHigh){
+                dayHigh = values.get(i);
+            }
+        }
+        return String.format("%.2f", dayHigh);
+    }
+
     public String getPrice(){
         YahooStockData selectedStock = getSelectedStock().getValue();
         if(selectedStock != null){
@@ -175,13 +205,18 @@ public class StockViewModel extends AndroidViewModel {
     }
 
     private String getVolumeText(){
-        Double volume;
-        try {
-            volume = Double.parseDouble(getSelectedStock().getValue().getChart().getResult()
-                    .get(0).getIndicators().getQuote().get(0).getVolume().get(0).toString());
-        }
-        catch (Exception e){
-            volume = 0d;
+        BigDecimal volume = new BigDecimal("0");
+        YahooStockData data = repository.getIntraDayData().getValue();
+
+        if(data == null)
+            return "";
+
+        List<BigDecimal> volumes = data.getChart().getResult().get(0).getIndicators().getQuote().get(0).getVolume();
+
+        for(int i = 0; i < volumes.size(); i++){
+            if(volumes.get(i) != null){
+                volume = new BigDecimal(volume.add(volumes.get(i)).toString());
+            }
         }
         return volume.toString();
     }

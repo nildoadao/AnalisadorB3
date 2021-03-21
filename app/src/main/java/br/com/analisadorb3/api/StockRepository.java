@@ -28,6 +28,7 @@ public class StockRepository {
     private MutableLiveData<YahooStockData> dailyData = new MutableLiveData<>();
     private MutableLiveData<YahooStockData> intraDayData = new MutableLiveData<>();
     private MutableLiveData<List<YahooStockData>> savedStocks = new MutableLiveData<>();
+    private MutableLiveData<YahooStockData> searchResult = new MutableLiveData<>();
 
     public MutableLiveData<List<String>> getFavouriteStocks() {
         return favouriteStocks;
@@ -47,6 +48,10 @@ public class StockRepository {
 
     public MutableLiveData<List<YahooStockData>> getSavedStocks(){
         return savedStocks;
+    }
+
+    public MutableLiveData<YahooStockData> getSearchResult(){
+        return searchResult;
     }
 
     public static StockRepository getInstance(){
@@ -71,7 +76,6 @@ public class StockRepository {
     public boolean unfollowStock(Context context, String symbol){
         boolean result =  SettingsUtil.removeFavouriteStock(context, symbol);
         favouriteStocks.postValue(SettingsUtil.getFavouriteStocks(context));
-        updateSavedStocks(SettingsUtil.getFavouriteStocks(context));
         return result;
     }
 
@@ -186,6 +190,29 @@ public class StockRepository {
                         // TODO handle errors
                         intraDayData.postValue(null);
                         refreshing.postValue(false);
+                    }
+                });
+    }
+
+    public void searchStockBySymbol(String symbol){
+        refreshing.postValue(true);
+        yahooFinanceApi.getStock(symbol, "1d", "15m")
+                .enqueue(new Callback<YahooStockData>() {
+                    @Override
+                    public void onResponse(Call<YahooStockData> call, Response<YahooStockData> response) {
+                        if(!response.isSuccessful()){
+                            searchResult.postValue(null);
+                            refreshing.postValue(false);
+                            return;
+                        }
+                        searchResult.postValue(response.body());
+                        refreshing.postValue(false);
+                    }
+
+                    @Override
+                    public void onFailure(Call<YahooStockData> call, Throwable t) {
+                        refreshing.postValue(false);
+                        // TODO handle errors
                     }
                 });
     }

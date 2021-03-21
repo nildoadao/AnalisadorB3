@@ -15,9 +15,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        SettingsUtil.saveFavouriteStock(getBaseContext(), "B3SA3.SA");
-        SettingsUtil.saveFavouriteStock(getBaseContext(), "PETR4.SA");
-        SettingsUtil.saveFavouriteStock(getBaseContext(), "MGLU3.SA");
         if(savedInstanceState == null)
             Navigation.findNavController(this, R.id.navigation_host_fragment).navigateUp();
     }

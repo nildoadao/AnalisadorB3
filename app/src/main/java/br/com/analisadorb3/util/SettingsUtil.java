@@ -57,9 +57,6 @@ public class SettingsUtil {
 
         favouriteStocks.add(stock);
 
-        if(favouriteStocks.size() > 5)
-            return false;
-
         String json = JSONObject.wrap(favouriteStocks).toString();
         SharedPreferences settings = context.getSharedPreferences(SAVED_STOCKS, 0);
         SharedPreferences.Editor editor = settings.edit();

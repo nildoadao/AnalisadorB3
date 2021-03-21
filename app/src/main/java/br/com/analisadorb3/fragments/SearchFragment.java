@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import br.com.analisadorb3.R;
@@ -94,15 +95,17 @@ public class SearchFragment extends Fragment {
             }
         });
 
-        viewModel.getSearchResults().observe(this, new Observer<List<YahooStockData>>() {
+        viewModel.getSearchResults().observe(this, new Observer<YahooStockData>() {
             @Override
-            public void onChanged(List<YahooStockData> stockSearchResults) {
-                if(stockSearchResults == null || stockSearchResults.size() == 0){
+            public void onChanged(YahooStockData stockSearchResult) {
+                if(stockSearchResult == null ){
                     recyclerView.setAdapter(emptySearchAdapter);
                 }
                 else {
                     recyclerView.setAdapter(adapter);
-                    adapter.submitList(stockSearchResults);
+                    List<YahooStockData> results = new ArrayList<>();
+                    results.add(stockSearchResult);
+                    adapter.submitList(results);
                 }
             }
         });

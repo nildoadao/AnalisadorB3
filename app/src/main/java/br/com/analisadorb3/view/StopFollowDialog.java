@@ -37,7 +37,7 @@ public class StopFollowDialog extends DialogFragment {
         String title = getArguments().getString("title");
         final String symbol = getArguments().getString("symbol");
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setMessage(title)
+        builder.setMessage(String.format("%s %s ?", title, symbol))
                 .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -57,7 +57,7 @@ public class StopFollowDialog extends DialogFragment {
                 .setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        getDialog().cancel();
+                        listener.onDialogFinish(false, symbol);
                     }
                 });
         return builder.create();

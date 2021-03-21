@@ -37,7 +37,7 @@
                 <LinearLayout
                     android:id="@+id/chart_linear_layout"
                     android:layout_width="match_parent"
-                    android:layout_height="200dp"
+                    android:layout_height="300dp"
                     android:layout_marginStart="16dp"
                     android:layout_marginTop="16dp"
                     android:layout_marginEnd="16dp"
@@ -45,11 +45,13 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/stock_change_percent">
+
                     <com.google.android.material.tabs.TabLayout
                         android:id="@+id/chart_tab"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         app:tabMode="scrollable" />
+
                     <androidx.viewpager.widget.ViewPager
                         android:id="@+id/chart_view_pager"
                         android:layout_width="match_parent"
@@ -199,59 +201,17 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/day_high_text" />
 
-                <TextView
-                    android:id="@+id/day_volume_text"
-                    style="@style/TextAppearance.AppCompat.Body1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="16dp"
-                    android:text="@string/volume"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/day_low_value" />
-
-                <TextView
-                    android:id="@+id/day_volume_value"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="16dp"
-                    android:text="@{viewModel.volume}"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/day_volume_text" />
-
-                <TextView
-                    android:id="@+id/day_change_average_3_text"
-                    style="@style/TextAppearance.AppCompat.Body1"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:text="@string/average_change_3"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/day_high_value" />
-
-                <TextView
-                    android:id="@+id/day_change_average_3_value"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginBottom="16dp"
-                    android:text="@{viewModel.threeMonthsAverageChange}"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/day_change_average_3_text" />
-
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/back_button"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:layout_marginTop="16dp"
+                    android:background="@android:color/transparent"
+                    android:backgroundTint="@android:color/transparent"
                     android:src="@drawable/back_arrow_icon"
+                    app:borderWidth="0dp"
+                    app:elevation="0dp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
